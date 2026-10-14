@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/data/demo_data.dart';
 import '../../../../core/data/hijri_date.dart';
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/state/app_scope.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/common_widgets.dart';
 
-/// Card used by the "المناسبات القادمة" list on the calendar screen.
+/// Card used by the upcoming-occasions list on the calendar screen.
 class EventListCard extends StatelessWidget {
   const EventListCard({super.key, required this.event});
 
@@ -15,15 +17,13 @@ class EventListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppCopy copy = AppCopy(context.l10n);
     final bool national = event.kind == EventKind.national;
-    final int days = DemoData.daysUntil(event.date);
+    final int days = AppScope.of(context).daysUntil(event.date);
     final HijriDate hijri = HijriDate.fromGregorian(event.date);
     final String dateLine = national
-        ? '${GregorianLabels.formatted(event.date).replaceAll(' م', '')} '
-              '(${hijri.formatted})'
-        : '${hijri.day} ${hijri.monthName} ${hijri.year} هـ - '
-              '${event.date.day} ${GregorianLabels.monthName(event.date)} '
-              '${event.date.year}';
+        ? '${copy.gregorianDate(event.date)} (${copy.hijriDate(hijri)})'
+        : '${copy.hijriDate(hijri)} - ${copy.gregorianDate(event.date)}';
 
     return Material(
       color: national ? AppColors.surface : AppColors.mintTint,
@@ -54,7 +54,7 @@ class EventListCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          event.title,
+                          copy.eventTitle(event),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -79,7 +79,9 @@ class EventListCard extends StatelessWidget {
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 110),
                     child: AppBadge(
-                      national ? '${event.badge} - بعد $days يومًا' : event.badge,
+                      national
+                          ? '${copy.eventBadge(event)} - ${copy.remainingDays(days)}'
+                          : copy.eventBadge(event),
                       background: national
                           ? AppColors.amberPill
                           : AppColors.mintStrong,
@@ -109,7 +111,7 @@ class EventListCard extends StatelessWidget {
                   const SizedBox(width: 7),
                   Expanded(
                     child: Text(
-                      event.note,
+                      copy.eventNote(event),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -119,7 +121,7 @@ class EventListCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    event.actionLabel,
+                    copy.eventAction(event),
                     style: const TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,

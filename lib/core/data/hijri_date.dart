@@ -1,9 +1,11 @@
-/// Lightweight Hijri conversion for the demo content.
+import 'package:general_datetime_core/general_datetime_core.dart' as umm;
+
+/// Hijri date backed by the published Umm Al-Qura table
+/// (`general_datetime_core`).
 ///
-/// It is anchored on the single mapping the reference screens state
-/// (7 September 2026 = 15 Rabi' al-Awwal 1448) and uses the classic
-/// alternating 30/29 month pattern. Good enough for a demo calendar, and it
-/// keeps every screen showing the same pair of dates.
+/// Official coverage is the verified Umm Al-Qura range (AH
+/// [umm.HijriDateTime.minimumOfficialYear]–[umm.HijriDateTime.maximumOfficialYear]).
+/// Dates outside that range throw and are not silently extrapolated.
 class HijriDate {
   const HijriDate(this.year, this.month, this.day);
 
@@ -28,44 +30,29 @@ class HijriDate {
     'ذو الحجة',
   ];
 
-  static const List<int> _monthLengths = <int>[
-    30,
-    29,
-    30,
-    29,
-    30,
-    29,
-    30,
-    29,
-    30,
-    29,
-    30,
-    29,
-  ];
-
-  static const int _yearLength = 354;
-
-  /// 1 Rabi' al-Awwal 1448 — derived from the reference mapping above.
-  static final DateTime _anchor = DateTime(2026, 8, 24);
-  static const int _anchorYear = 1448;
-
-  /// Days elapsed inside year 1448 before 1 Rabi' al-Awwal (30 + 29).
-  static const int _anchorDayOfYear = 59;
-
   static HijriDate fromGregorian(DateTime date) {
-    final DateTime day = DateTime(date.year, date.month, date.day);
-    final int total = _anchorDayOfYear + day.difference(_anchor).inDays;
-    final int years = (total / _yearLength).floor();
-    int remainder = total - years * _yearLength;
-    int month = 0;
-    while (remainder >= _monthLengths[month]) {
-      remainder -= _monthLengths[month];
-      month++;
-    }
-    return HijriDate(_anchorYear + years, month + 1, remainder + 1);
+    final DateTime civil = DateTime(date.year, date.month, date.day);
+    final umm.HijriDateTime hijri = umm.HijriDateTime.fromDateTime(civil);
+    return HijriDate(hijri.year, hijri.month, hijri.day);
   }
 
-  static int monthLength(int month) => _monthLengths[month - 1];
+  /// Civil Gregorian date for this Umm Al-Qura day. Throws [RangeError] outside
+  /// the published table.
+  DateTime toGregorian() {
+    final umm.HijriDateTime hijri = umm.HijriDateTime(year, month, day);
+    final DateTime local = DateTime.fromMicrosecondsSinceEpoch(
+      hijri.microsecondsSinceEpoch,
+    );
+    return DateTime(local.year, local.month, local.day);
+  }
+
+  static int monthLength(int year, int month) {
+    final umm.HijriDateTime first = umm.HijriDateTime(year, month, 1);
+    final umm.HijriDateTime next = month == 12
+        ? umm.HijriDateTime(year + 1, 1, 1)
+        : umm.HijriDateTime(year, month + 1, 1);
+    return next.difference(first).inDays;
+  }
 
   String get monthName => monthNames[month - 1];
 

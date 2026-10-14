@@ -1,0 +1,3 @@
+NSLocationWhenInUseUsageDescription = "Your location is used while the app is open to calculate prayer times for your city.";
+NSCalendarsUsageDescription = "Occasions are added to your device calendar only when you ask.";
+NSCalendarsFullAccessUsageDescription = "Occasions are added to your device calendar only when you ask.";

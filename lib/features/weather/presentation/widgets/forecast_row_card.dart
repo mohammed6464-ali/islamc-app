@@ -1,34 +1,54 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/common_widgets.dart';
 
-/// Row of the "توقعات الأيام القادمة" list.
+/// Row of the upcoming-days forecast list.
 class ForecastRowCard extends StatelessWidget {
-  const ForecastRowCard({super.key, required this.forecast});
+  const ForecastRowCard({
+    super.key,
+    required this.forecast,
+    this.selected,
+    this.onTap,
+  });
 
   final DailyForecast forecast;
+  final bool? selected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
-    final bool highlighted = forecast.isToday;
+    final AppCopy copy = AppCopy(context.l10n);
+    final bool highlighted = selected ?? forecast.isToday;
+    final String dayLabel = copy.forecastDay(forecast);
+    final String description = copy.weatherCondition(
+      forecast.weatherCode ?? state.weather.weatherCode,
+      isDay: forecast.weatherCode != null ? true : state.weather.isDay,
+    );
+    final String badge = copy.forecastBadge(forecast);
 
     return Material(
       color: highlighted ? AppColors.mintSoft : AppColors.surface,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => showAppMessage(
-          context,
-          'توقعات ${forecast.day}: ${forecast.description} '
-          '(${state.formatTemperature(forecast.low)} / '
-          '${state.formatTemperature(forecast.high)}).',
-        ),
+        onTap: onTap ??
+            () => showAppMessage(
+              context,
+              context.l10n.forecastSnack(
+                dayLabel,
+                description,
+                state.formatTemperature(forecast.low),
+                state.formatTemperature(forecast.high),
+              ),
+            ),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
           decoration: BoxDecoration(
@@ -40,7 +60,7 @@ class ForecastRowCard extends StatelessWidget {
           child: Row(
             children: <Widget>[
               IconTile(
-                forecast.icon,
+                forecast.displayIcon,
                 size: 42,
                 radius: 13,
                 iconSize: 21,
@@ -58,7 +78,7 @@ class ForecastRowCard extends StatelessWidget {
                       children: <Widget>[
                         Flexible(
                           child: Text(
-                            forecast.day,
+                            dayLabel,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -69,10 +89,10 @@ class ForecastRowCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (forecast.badge != null) ...<Widget>[
+                        if (badge.isNotEmpty) ...<Widget>[
                           const SizedBox(width: 8),
                           AppBadge(
-                            forecast.badge!,
+                            badge,
                             fontSize: 9.5,
                             background: forecast.badgeTone == BadgeTone.amber
                                 ? AppColors.amberPill
@@ -86,7 +106,7 @@ class ForecastRowCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      forecast.description,
+                      description,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

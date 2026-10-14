@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_language.dart';
 import '../theme/app_colors.dart';
 
 /// Top bar shared by the detail screens: a leading control, a right aligned
@@ -95,14 +96,14 @@ class HeaderBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget icon = const Icon(
-      Icons.chevron_left,
-      size: 26,
+      Icons.arrow_back,
+      size: 24,
       color: AppColors.textPrimary,
     );
 
     return _HeaderTapTarget(
       onPressed: onPressed ?? () => Navigator.of(context).maybePop(),
-      tooltip: 'رجوع',
+      tooltip: context.l10n.back,
       boxed: boxed,
       child: icon,
     );

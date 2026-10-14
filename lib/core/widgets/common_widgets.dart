@@ -149,7 +149,7 @@ class PrimaryButton extends StatelessWidget {
       width: double.infinity,
       height: height,
       child: Material(
-        color: AppColors.primary,
+        color: AppColors.accentGreen,
         borderRadius: BorderRadius.circular(radius),
         child: InkWell(
           borderRadius: BorderRadius.circular(radius),

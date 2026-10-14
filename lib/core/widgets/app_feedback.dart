@@ -12,7 +12,7 @@ void showAppMessage(BuildContext context, String message) {
     ..showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.primaryDark,
+        backgroundColor: AppColors.darkGreen,
         duration: const Duration(seconds: 2),
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         shape: RoundedRectangleBorder(

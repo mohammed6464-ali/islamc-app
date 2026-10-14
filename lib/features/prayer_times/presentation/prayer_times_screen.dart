@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/data/demo_data.dart';
 import '../../../core/data/models.dart';
+import '../../../core/l10n/app_copy.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/navigation/main_shell.dart';
 import '../../../core/state/app_scope.dart';
@@ -30,26 +31,26 @@ class PrayerTimesScreen extends StatelessWidget {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           bottom: false,
           child: Column(
             children: <Widget>[
               AppScreenHeader(
                 leading: const HeaderBackButton(),
-                title: 'مواقيت الصلاة',
+                title: context.l10n.prayerTimes,
                 actions: <Widget>[
                   HeaderIconButton(
                     icon: Icons.calendar_today_outlined,
-                    tooltip: 'التقويم',
+                    tooltip: context.l10n.calendar,
                     onPressed: () => MainShell.goToTab(context, 2),
                   ),
                   HeaderIconButton(
                     icon: Icons.share_outlined,
-                    tooltip: 'مشاركة المواقيت',
+                    tooltip: context.l10n.shareApp,
                     onPressed: () => showAppMessage(
                       context,
-                      'المشاركة غير مفعّلة في النسخة التجريبية.',
+                      context.l10n.shareDisabled,
                     ),
                   ),
                 ],
@@ -78,7 +79,7 @@ class PrayerTimesScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
                 child: PrimaryButton(
-                  label: 'إعدادات تنبيهات الصلاة',
+                  label: context.l10n.prayerNotificationSettings,
                   icon: Icons.notifications_none_rounded,
                   onPressed: () => Navigator.of(
                     context,
@@ -100,6 +101,7 @@ class _QiblaStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
 
     return Material(
       color: AppColors.pillGray,
@@ -119,7 +121,10 @@ class _QiblaStrip extends StatelessWidget {
               const SizedBox(width: 9),
               Expanded(
                 child: Text(
-                  'اتجاه القبلة: ${state.city.qiblaLabel}',
+                  '${context.l10n.qiblaDirection}: ${copy.qiblaLabel(
+                    state.city.qiblaAngle.toDouble(),
+                    atKaaba: state.city.distanceToMakkah < 2,
+                  )}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -131,7 +136,7 @@ class _QiblaStrip extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                DemoData.calendarName,
+                copy.calcMethod(state.calculationMethodEnum),
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,

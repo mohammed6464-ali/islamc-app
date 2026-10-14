@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/data/demo_data.dart';
+import '../../../core/l10n/app_copy.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/theme/app_colors.dart';
@@ -62,8 +63,8 @@ class _SectionHeader extends StatelessWidget {
       children: <Widget>[
         GestureDetector(
           onTap: () => Navigator.of(context).pushNamed(AppRoutes.prayerTimes),
-          child: const Text(
-            DemoData.prayerTimesHeader,
+          child: Text(
+            context.l10n.todaysPrayers,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -75,7 +76,9 @@ class _SectionHeader extends StatelessWidget {
         const Spacer(),
         Flexible(
           child: Text(
-            AppScope.of(context).prayerSourceLabel,
+            context.l10n.prayerSource(
+              AppCopy(context.l10n).cityName(AppScope.of(context).city),
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.end,

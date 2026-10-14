@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/data/demo_data.dart';
 import '../../../../core/data/hijri_date.dart';
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -78,14 +79,14 @@ class _CalendarModeSwitch extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: _SwitchSegment(
-              label: 'هجري',
+              label: context.l10n.hijri,
               selected: state.hijriView,
               onTap: () => state.setHijriView(true),
             ),
           ),
           Expanded(
             child: _SwitchSegment(
-              label: 'ميلادي',
+              label: context.l10n.gregorian,
               selected: !state.hijriView,
               onTap: () => state.setHijriView(false),
             ),
@@ -150,20 +151,25 @@ class _MonthNavigator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppState state = AppScope.read(context);
+    final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
 
     return Row(
       children: <Widget>[
         _NavButton(
-          icon: Icons.chevron_left,
-          tooltip: 'الشهر السابق',
-          onPressed: () => state.shiftMonth(-1),
+          icon: Icons.arrow_back,
+          tooltip: context.l10n.previousMonth,
+          onPressed: () => state.hijriView
+              ? state.shiftHijriMonth(-1)
+              : state.shiftMonth(-1),
         ),
         Expanded(
           child: Column(
             children: <Widget>[
               Text(
-                '${GregorianLabels.monthName(month)} ${month.year}',
+                state.hijriView
+                    ? copy.hijriMonthYear(hijriMonth)
+                    : copy.gregorianMonthYear(month),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -174,7 +180,9 @@ class _MonthNavigator extends StatelessWidget {
                 ),
               ),
               Text(
-                hijriMonth.monthFormatted,
+                state.hijriView
+                    ? copy.gregorianMonthYear(month)
+                    : copy.hijriMonthYear(hijriMonth),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -188,9 +196,11 @@ class _MonthNavigator extends StatelessWidget {
           ),
         ),
         _NavButton(
-          icon: Icons.chevron_right,
-          tooltip: 'الشهر التالي',
-          onPressed: () => state.shiftMonth(1),
+          icon: Icons.arrow_forward,
+          tooltip: context.l10n.nextMonth,
+          onPressed: () => state.hijriView
+              ? state.shiftHijriMonth(1)
+              : state.shiftMonth(1),
         ),
       ],
     );
@@ -234,6 +244,8 @@ class _WeekdayHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> weekdays = AppCopy(context.l10n).weekdaysSundayFirst;
+
     return Row(
       children: <Widget>[
         for (int i = 0; i < 7; i++)
@@ -243,7 +255,7 @@ class _WeekdayHeader extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.scaleDown,
                 child: Text(
-                  GregorianLabels.weekdays[i],
+                  weekdays[i],
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: i == 5 ? FontWeight.w700 : FontWeight.w500,
@@ -269,10 +281,14 @@ class _DayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
     final bool inMonth = date.month == month.month && date.year == month.year;
-    final bool isToday = date == DemoData.today;
+    final bool isToday =
+        date.year == state.today.year &&
+        date.month == state.today.month &&
+        date.day == state.today.day;
     final bool isFriday = date.weekday == DateTime.friday;
-    final IslamicEvent? event = DemoData.eventOn(date);
+    final IslamicEvent? event = state.eventOn(date);
     final bool isSelected = date == state.selectedDate && !isToday;
     final HijriDate hijri = HijriDate.fromGregorian(date);
 
@@ -316,7 +332,7 @@ class _DayCell extends StatelessWidget {
     return Semantics(
       selected: date == state.selectedDate,
       button: true,
-      label: '${GregorianLabels.withWeekday(date)} — ${hijri.formatted}',
+      label: '${copy.weekdayDate(date)} — ${copy.hijriDate(hijri)}',
       child: InkWell(
         borderRadius: BorderRadius.circular(13),
         onTap: () {
@@ -333,7 +349,7 @@ class _DayCell extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Text(
-                    '${date.day}',
+                    '${state.hijriView ? hijri.day : date.day}',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -342,7 +358,7 @@ class _DayCell extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${hijri.day}',
+                    '${state.hijriView ? date.day : hijri.day}',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w400,

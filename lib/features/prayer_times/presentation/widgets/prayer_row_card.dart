@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -17,6 +19,7 @@ class PrayerRowCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
     final bool isNext = prayer.isNext;
     final bool alertOn = state.alertFor(prayer.id);
 
@@ -57,7 +60,7 @@ class PrayerRowCard extends StatelessWidget {
                     children: <Widget>[
                       Flexible(
                         child: Text(
-                          prayer.name,
+                          copy.prayerName(prayer.id),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -70,8 +73,8 @@ class PrayerRowCard extends StatelessWidget {
                       ),
                       if (isNext) ...<Widget>[
                         const SizedBox(width: 8),
-                        const AppBadge(
-                          'الصلاة القادمة',
+                        AppBadge(
+                          context.l10n.nextPrayer,
                           background: AppColors.primary,
                           foreground: AppColors.surface,
                           fontSize: 9.5,
@@ -81,7 +84,9 @@ class PrayerRowCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    isNext ? 'متبقي ${state.countdown}' : prayer.note,
+                    isNext
+                        ? '${context.l10n.remainingUntilPrayer} ${state.countdown}'
+                        : copy.prayerNote(prayer),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -98,7 +103,8 @@ class PrayerRowCard extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              prayer.timeWithPeriod,
+              copy.timeWithPeriod(prayer),
+              textDirection: TextDirection.ltr,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -128,6 +134,8 @@ class _AlertButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.read(context);
+    final AppCopy copy = AppCopy(context.l10n);
+    final String longName = copy.prayerLongName(prayer.id);
 
     if (!prayer.supportsAlert) {
       return const _BellCircle(
@@ -139,7 +147,7 @@ class _AlertButton extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: 'تنبيه ${prayer.longName}',
+      label: '${context.l10n.prayerNotifications} $longName',
       child: InkResponse(
         radius: 24,
         onTap: () {
@@ -147,8 +155,8 @@ class _AlertButton extends StatelessWidget {
           showAppMessage(
             context,
             state.rawAlertFor(prayer.id)
-                ? 'تم تفعيل تنبيه ${prayer.longName} (تجريبي).'
-                : 'تم إيقاف تنبيه ${prayer.longName} (تجريبي).',
+                ? context.l10n.adhanEnabled
+                : context.l10n.adhanDisabled,
           );
         },
         child: _BellCircle(

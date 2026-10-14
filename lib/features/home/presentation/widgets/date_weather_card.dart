@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/main_shell.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
@@ -74,7 +76,7 @@ class _DateBlock extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text(
-                AppScope.of(context).hijriLabel,
+                AppCopy(context.l10n).hijriDate(AppScope.of(context).hijriToday),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -86,7 +88,7 @@ class _DateBlock extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                AppScope.of(context).gregorianLabel,
+                AppCopy(context.l10n).gregorianDate(AppScope.of(context).today),
                 style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w400,
@@ -118,7 +120,7 @@ class _WeatherBlock extends StatelessWidget {
             children: <Widget>[
               Text(
                 '${state.formatTemperature(state.weather.temperature)} '
-                '${state.useFahrenheit ? 'ف' : 'م'}',
+                '${state.useFahrenheit ? context.l10n.fahrenheitUnit : context.l10n.celsiusUnit}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -130,7 +132,10 @@ class _WeatherBlock extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                state.weather.condition,
+                AppCopy(context.l10n).weatherCondition(
+                  state.weather.weatherCode,
+                  isDay: state.weather.isDay,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -160,7 +165,7 @@ class PartlyCloudyTile extends StatelessWidget {
       width: 38,
       height: 38,
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F1EA),
+        color: AppColors.pillGray,
         borderRadius: BorderRadius.circular(12),
       ),
       alignment: Alignment.center,
@@ -184,7 +189,7 @@ class PartlyCloudyTile extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(1),
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF2F1EA),
+                  color: AppColors.pillGray,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

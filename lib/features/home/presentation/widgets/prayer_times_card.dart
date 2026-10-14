@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -42,7 +44,7 @@ class PrayerTimeItem extends StatelessWidget {
     final Color nameColor =
         active ? AppColors.primary : AppColors.textMuted;
     final Color timeColor =
-        active ? AppColors.primary : const Color(0xFF454B47);
+        active ? AppColors.primary : AppColors.textPrimary;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -60,7 +62,7 @@ class PrayerTimeItem extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
-              entry.name,
+              AppCopy(context.l10n).prayerName(entry.id),
               maxLines: 1,
               style: TextStyle(
                 fontSize: 11,
@@ -74,7 +76,7 @@ class PrayerTimeItem extends StatelessWidget {
           Icon(
             entry.icon,
             size: 17,
-            color: active ? AppColors.primary : const Color(0xFFB9BEBA),
+            color: active ? AppColors.primary : AppColors.textMuted,
           ),
           const SizedBox(height: 9),
           FittedBox(
@@ -93,7 +95,7 @@ class PrayerTimeItem extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            entry.period,
+            AppCopy(context.l10n).period(entry.minutes),
             style: TextStyle(
               fontSize: 10,
               fontWeight: active ? FontWeight.w600 : FontWeight.w400,

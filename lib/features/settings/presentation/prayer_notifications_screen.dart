@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/adhan/adhan_audio_catalog.dart';
 import '../../../core/data/demo_data.dart';
 import '../../../core/data/models.dart';
+import '../../../core/l10n/app_copy.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/state/app_state.dart';
 import '../../../core/theme/app_colors.dart';
@@ -10,6 +14,7 @@ import '../../../core/widgets/app_feedback.dart';
 import '../../../core/widgets/app_screen_header.dart';
 import '../../../core/widgets/app_toggle.dart';
 import '../../../core/widgets/common_widgets.dart';
+import 'widgets/adhan_trial_card.dart';
 import 'widgets/settings_tile.dart';
 
 class PrayerNotificationsScreen extends StatelessWidget {
@@ -18,6 +23,8 @@ class PrayerNotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
+    final String mosqueLabel = copy.mosque(state.adhanMosque);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -26,23 +33,22 @@ class PrayerNotificationsScreen extends StatelessWidget {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           bottom: false,
           child: Column(
             children: <Widget>[
               AppScreenHeader(
                 leading: const HeaderBackButton(),
-                title: 'تنبيهات الصلاة',
+                title: context.l10n.prayerNotifications,
                 actions: <Widget>[
                   HeaderIconButton(
                     icon: Icons.notifications_active_outlined,
-                    tooltip: 'معاينة التنبيه',
+                    tooltip: context.l10n.adhanPreview,
                     circled: true,
                     onPressed: () => showAppMessage(
                       context,
-                      'معاينة الأذان غير متاحة — لا يوجد صوت في النسخة '
-                      'التجريبية.',
+                      context.l10n.adhanPreviewHint,
                     ),
                   ),
                 ],
@@ -64,34 +70,46 @@ class PrayerNotificationsScreen extends StatelessWidget {
                       children: <Widget>[
                         SettingsTile(
                           icon: Icons.volume_up_outlined,
-                          title: 'صوت الأذان والتكبير',
-                          subtitle: state.adhanSound,
+                          title: context.l10n.adhanSound,
+                          subtitle: mosqueLabel,
                           onTap: () async {
+                            final List<String> options = <String>[
+                              for (final AdhanMosque mosque
+                                  in AdhanMosque.values)
+                                copy.mosque(mosque),
+                            ];
                             final String? picked = await showOptionPicker(
                               context,
-                              title: 'صوت الأذان والتكبير',
-                              options: DemoData.adhanSounds,
-                              selected: state.adhanSound,
+                              title: context.l10n.adhanSound,
+                              options: options,
+                              selected: mosqueLabel,
                             );
                             if (picked == null) return;
-                            state.setAdhanSound(picked);
+                            final int index = options.indexOf(picked);
+                            if (index >= 0) {
+                              state.setAdhanMosque(AdhanMosque.values[index]);
+                            }
                             if (!context.mounted) return;
                             showAppMessage(
                               context,
-                              'تم اختيار «$picked» — لا يوجد تشغيل صوتي فعلي '
-                              'بعد.',
+                              context.l10n.adhanSoundPicked(picked),
                             );
                           },
                         ),
                       ],
                     ),
                     const SizedBox(height: 14),
-                    const InfoNote(
+                    const AdhanTrialCard(),
+                    if (kDebugMode) ...<Widget>[
+                      const SizedBox(height: 14),
+                      const _TestNotificationCard(),
+                    ],
+                    const SizedBox(height: 14),
+                    InfoNote(
                       icon: Icons.info_outline_rounded,
                       text:
-                          'يتم احتساب المواقيت وفق تقويم أم القرى بمكة '
-                          'المكرمة. يتم ضبط التنبيهات بدقة تلقائياً عند تغير '
-                          'موقعك الجغرافي.',
+                          '${context.l10n.prayerNotifyNote}'
+                          '${state.notificationPermissionMessage == null ? '' : ' ${state.notificationPermissionMessage}'}',
                     ),
                   ],
                 ),
@@ -99,12 +117,23 @@ class PrayerNotificationsScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
                 child: PrimaryButton(
-                  label: 'حفظ التفضيلات',
+                  label: context.l10n.savePreferences,
                   icon: Icons.check_rounded,
-                  onPressed: () => showAppMessage(
-                    context,
-                    'تم حفظ التفضيلات محليًا — لا توجد جدولة إشعارات حقيقية.',
-                  ),
+                  onPressed: () async {
+                    final bool allowed = await state
+                        .requestNotificationPermission();
+                    await state.resyncNotifications();
+                    if (!context.mounted) {
+                      return;
+                    }
+                    showAppMessage(
+                      context,
+                      allowed
+                          ? context.l10n.prefsSaved
+                          : (state.notificationPermissionMessage ??
+                                context.l10n.prefsBlocked),
+                    );
+                  },
                 ),
               ),
             ],
@@ -133,23 +162,23 @@ class _MasterCard extends StatelessWidget {
         children: <Widget>[
           const IconTile.mint(Icons.notifications_none_rounded, size: 46, iconSize: 23),
           const SizedBox(width: 13),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'تفعيل تنبيهات الصلوات كافة',
-                  style: TextStyle(
+                  context.l10n.enableAllPrayerAlerts,
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textPrimary,
                     height: 1.3,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
-                  'تلقي نداء الأذان والإشعارات لجميع الأوقات',
-                  style: TextStyle(
+                  context.l10n.receiveAdhanAll,
+                  style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.textSecondary,
                     height: 1.5,
@@ -192,16 +221,19 @@ class _PrayerList extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
               child: Row(
                 children: <Widget>[
-                  const Text(
-                    'مواقيت الصلوات اليومية',
-                    style: TextStyle(
+                  Text(
+                    context.l10n.dailyPrayerTimes,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
                   const Spacer(),
-                  AppBadge('${prayers.length} مواقيت', fontSize: 10),
+                  AppBadge(
+                    '${prayers.length} ${context.l10n.prayerTimes}',
+                    fontSize: 10,
+                  ),
                 ],
               ),
             ),
@@ -224,6 +256,7 @@ class _PrayerAlertRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
     final bool on = state.rawAlertFor(prayer.id);
     final bool isNext = prayer.isNext;
 
@@ -249,7 +282,7 @@ class _PrayerAlertRow extends StatelessWidget {
                   children: <Widget>[
                     Flexible(
                       child: Text(
-                        prayer.supportsAlert ? prayer.longName : 'وقت الشروق',
+                        copy.prayerLongName(prayer.id),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -262,8 +295,8 @@ class _PrayerAlertRow extends StatelessWidget {
                     ),
                     if (isNext) ...<Widget>[
                       const SizedBox(width: 8),
-                      const AppBadge(
-                        'القادمة',
+                      AppBadge(
+                        context.l10n.upcomingShort,
                         background: AppColors.mintStrong,
                         fontSize: 9.5,
                       ),
@@ -272,7 +305,8 @@ class _PrayerAlertRow extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  prayer.timeWithPeriod,
+                  copy.timeWithPeriod(prayer),
+                  textDirection: TextDirection.ltr,
                   style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w500,
@@ -284,7 +318,7 @@ class _PrayerAlertRow extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Text(
-            on ? 'مفعل' : 'غير مفعل',
+            on ? context.l10n.enabled : context.l10n.disabled,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -321,10 +355,10 @@ class _PreAlertCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
               child: SectionTitle(
-                title: 'وقت التنبيه المسبق',
+                title: context.l10n.preAlertTime,
                 icon: Icons.timer_outlined,
               ),
             ),
@@ -376,7 +410,7 @@ class _PreAlertOption extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  DemoData.preAlertLabel(minutes),
+                  AppCopy(context.l10n).preAlertLabel(minutes),
                   style: const TextStyle(
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
@@ -386,8 +420,8 @@ class _PreAlertOption extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               if (minutes == 0)
-                const AppBadge(
-                  'الافتراضي',
+                AppBadge(
+                  context.l10n.defaultLabel,
                   background: AppColors.mintStrong,
                   fontSize: 9.5,
                 )
@@ -403,6 +437,83 @@ class _PreAlertOption extends StatelessWidget {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TestNotificationCard extends StatelessWidget {
+  const _TestNotificationCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final AppState state = AppScope.of(context);
+    final DateTime? scheduled = state.lastTestNotificationAt;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(13, 14, 13, 13),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            SectionTitle(
+              title: context.l10n.testNotification,
+              icon: Icons.notification_add_outlined,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              context.l10n.testNotificationBody,
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.55,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            if (scheduled != null) ...<Widget>[
+              const SizedBox(height: 8),
+              Text(
+                context.l10n.notificationAt(
+                  '${scheduled.hour.toString().padLeft(2, '0')}:'
+                  '${scheduled.minute.toString().padLeft(2, '0')}',
+                ),
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            PrimaryButton(
+              label: context.l10n.scheduleTest,
+              icon: Icons.schedule_send_outlined,
+              height: 46,
+              onPressed: () async {
+                final DateTime? at = await state.scheduleTestNotification();
+                if (!context.mounted) {
+                  return;
+                }
+                if (at == null) {
+                  showAppMessage(
+                    context,
+                    state.notificationPermissionMessage ??
+                        context.l10n.testFailed,
+                  );
+                  return;
+                }
+                showAppMessage(
+                  context,
+                  context.l10n.testScheduled,
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

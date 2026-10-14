@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -14,7 +16,9 @@ class PrayerCountdownCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
     final PrayerTime next = state.nextPrayer;
+    final String nextName = copy.prayerName(next.id);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -66,14 +70,14 @@ class PrayerCountdownCard extends StatelessWidget {
                             color: AppColors.surface.withValues(alpha: 0.14),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            Dot(size: 6, color: AppColors.mintStrong),
-                            SizedBox(width: 7),
+                            const Dot(size: 6, color: AppColors.mintStrong),
+                            const SizedBox(width: 7),
                             Text(
-                              'الصلاة القادمة',
-                              style: TextStyle(
+                              context.l10n.nextPrayer,
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: AppColors.surface,
@@ -85,7 +89,7 @@ class PrayerCountdownCard extends StatelessWidget {
                       const SizedBox(width: 10),
                       Flexible(
                         child: Text(
-                          'أذان ${next.name}',
+                          nextName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -106,7 +110,7 @@ class PrayerCountdownCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(9),
                         ),
                         child: Text(
-                          'متبقي',
+                          context.l10n.remainingUntilPrayer,
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w600,
@@ -124,7 +128,7 @@ class PrayerCountdownCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          '${next.name} بعد',
+                          nextName,
                           style: const TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.w700,
@@ -146,7 +150,8 @@ class PrayerCountdownCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          next.timeWithPeriod,
+                          copy.timeWithPeriod(next),
+                          textDirection: TextDirection.ltr,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,

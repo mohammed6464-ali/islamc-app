@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'app_colors.dart';
 
@@ -11,15 +12,45 @@ class AppTheme {
     final ColorScheme scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       primary: AppColors.primary,
+      secondary: AppColors.accentGreen,
       surface: AppColors.surface,
+      brightness: Brightness.light,
     );
 
     return ThemeData(
       useMaterial3: true,
       fontFamily: fontFamily,
+      brightness: Brightness.light,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.background,
       splashFactory: InkRipple.splashFactory,
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+          return AppColors.surface;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+          return states.contains(WidgetState.selected)
+              ? AppColors.accentGreen
+              : AppColors.toggleOff;
+        }),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.accentGreen,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.darkGreen,
+        contentTextStyle: const TextStyle(
+          fontFamily: fontFamily,
+          fontWeight: FontWeight.w600,
+          color: AppColors.surface,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        behavior: SnackBarBehavior.floating,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
       textTheme: const TextTheme(
         displayLarge: TextStyle(color: AppColors.textPrimary),
         bodyLarge: TextStyle(color: AppColors.textPrimary),
@@ -27,6 +58,72 @@ class AppTheme {
         bodySmall: TextStyle(color: AppColors.textSecondary),
       ).apply(fontFamily: fontFamily),
     );
+  }
+
+  static ThemeData get dark {
+    final ColorScheme scheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      primary: AppColors.lightMint,
+      secondary: AppColors.accentGreen,
+      surface: AppColors.darkSurface,
+      brightness: Brightness.dark,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      fontFamily: fontFamily,
+      brightness: Brightness.dark,
+      colorScheme: scheme,
+      scaffoldBackgroundColor: AppColors.darkBackground,
+      splashFactory: InkRipple.splashFactory,
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.all(AppColors.surface),
+        trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
+          return states.contains(WidgetState.selected)
+              ? AppColors.accentGreen
+              : AppColors.darkBorder;
+        }),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.lightMint,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.darkGreen,
+        contentTextStyle: const TextStyle(
+          fontFamily: fontFamily,
+          fontWeight: FontWeight.w600,
+          color: AppColors.surface,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        behavior: SnackBarBehavior.floating,
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.darkSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: AppColors.darkTextPrimary),
+        bodyLarge: TextStyle(color: AppColors.darkTextPrimary),
+        bodyMedium: TextStyle(color: AppColors.darkTextPrimary),
+        bodySmall: TextStyle(color: AppColors.darkTextSecondary),
+      ).apply(fontFamily: fontFamily),
+    );
+  }
+}
+
+class AppOverlays {
+  const AppOverlays._();
+
+  static SystemUiOverlayStyle of(BuildContext context) {
+    final bool dark = Theme.of(context).brightness == Brightness.dark;
+    return (dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark)
+        .copyWith(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Theme.of(context).colorScheme.surface,
+          systemNavigationBarIconBrightness: dark
+              ? Brightness.light
+              : Brightness.dark,
+        );
   }
 }
 

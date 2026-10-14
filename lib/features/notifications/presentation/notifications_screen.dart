@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../core/data/demo_data.dart';
 import '../../../core/data/models.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/state/app_state.dart';
@@ -11,6 +11,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_feedback.dart';
 import '../../../core/widgets/app_screen_header.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -18,8 +19,9 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final List<AppNotification> items = state.notifications;
     final List<String> groups = <String>{
-      for (final AppNotification n in DemoData.notifications) n.group,
+      for (final AppNotification n in items) n.group,
     }.toList(growable: false);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -29,14 +31,14 @@ class NotificationsScreen extends StatelessWidget {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           bottom: false,
           child: Column(
             children: <Widget>[
               AppScreenHeader(
                 leading: const HeaderBackButton(),
-                title: 'الإشعارات',
+                title: context.l10n.notifications,
                 actions: <Widget>[_MarkAllButton(state: state)],
               ),
               Expanded(
@@ -46,21 +48,32 @@ class NotificationsScreen extends StatelessWidget {
                     parent: AlwaysScrollableScrollPhysics(),
                   ),
                   children: <Widget>[
-                    for (final String group in groups) ...<Widget>[
-                      _GroupHeader(
-                        label: group,
-                        trailing: group == 'اليوم' ? 'تحديث فوري' : null,
-                      ),
-                      const SizedBox(height: 10),
-                      for (final AppNotification notification
-                          in DemoData.notifications.where(
-                            (AppNotification n) => n.group == group,
-                          )) ...<Widget>[
-                        _NotificationCard(notification: notification),
+                    if (items.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: InfoNote(
+                          icon: Icons.notifications_none_rounded,
+                          text: context.l10n.emptyNotifications,
+                        ),
+                      )
+                    else
+                      for (final String group in groups) ...<Widget>[
+                        _GroupHeader(
+                          label: _groupLabel(context.l10n, group),
+                          trailing: _isTodayGroup(context.l10n, group)
+                              ? context.l10n.liveUpdate
+                              : null,
+                        ),
+                        const SizedBox(height: 10),
+                        for (final AppNotification notification
+                            in items.where(
+                              (AppNotification n) => n.group == group,
+                            )) ...<Widget>[
+                          _NotificationCard(notification: notification),
+                          const SizedBox(height: 10),
+                        ],
                         const SizedBox(height: 10),
                       ],
-                      const SizedBox(height: 10),
-                    ],
                     const SizedBox(height: 8),
                     const _CustomizeCard(),
                   ],
@@ -72,6 +85,24 @@ class NotificationsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _isTodayGroup(AppLocalizations l10n, String group) {
+  return group == 'اليوم' || group == 'Today' || group == l10n.today;
+}
+
+bool _isYesterdayGroup(AppLocalizations l10n, String group) {
+  return group == 'أمس' || group == 'Yesterday' || group == l10n.yesterday;
+}
+
+String _groupLabel(AppLocalizations l10n, String group) {
+  if (_isTodayGroup(l10n, group)) {
+    return l10n.today;
+  }
+  if (_isYesterdayGroup(l10n, group)) {
+    return l10n.yesterday;
+  }
+  return group;
 }
 
 class _MarkAllButton extends StatelessWidget {
@@ -87,7 +118,7 @@ class _MarkAllButton extends StatelessWidget {
       onPressed: enabled
           ? () {
               state.markAllNotificationsRead();
-              showAppMessage(context, 'تم تحديد جميع الإشعارات كمقروءة.');
+              showAppMessage(context, context.l10n.markAllReadDone);
             }
           : null,
       icon: Icon(
@@ -96,7 +127,7 @@ class _MarkAllButton extends StatelessWidget {
         color: enabled ? AppColors.primary : AppColors.textMuted,
       ),
       label: Text(
-        'تحديد الكل',
+        context.l10n.markAllRead,
         style: TextStyle(
           fontSize: 12.5,
           fontWeight: FontWeight.w600,
@@ -249,17 +280,23 @@ class _NotificationCard extends StatelessWidget {
   }
 
   static void _openTarget(BuildContext context, AppNotification notification) {
-    switch (notification.id) {
-      case 'dhuhr-adhan':
-        Navigator.of(context).pushNamed(AppRoutes.prayerTimes);
-      case 'national-day-soon':
-        Navigator.of(context).pushNamed(
-          AppRoutes.eventDetails,
-          arguments: DemoData.featuredEvent.id,
-        );
-      case 'times-updated':
-        Navigator.of(context).pushNamed(AppRoutes.currentLocation);
+    final String? route = notification.targetRoute;
+    if (route == AppRoutes.eventDetails && notification.targetId != null) {
+      Navigator.of(context).pushNamed(route!, arguments: notification.targetId);
+      return;
     }
+    if (route != null) {
+      Navigator.of(context).pushNamed(route);
+      return;
+    }
+    if (notification.id.startsWith('event-')) {
+      Navigator.of(context).pushNamed(
+        AppRoutes.eventDetails,
+        arguments: notification.targetId,
+      );
+      return;
+    }
+    Navigator.of(context).pushNamed(AppRoutes.prayerTimes);
   }
 }
 
@@ -298,30 +335,30 @@ class _CustomizeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: () =>
             Navigator.of(context).pushNamed(AppRoutes.prayerNotifications),
-        child: const AppCard(
+        child: AppCard(
           radius: 16,
-          padding: EdgeInsets.all(13),
+          padding: const EdgeInsets.all(13),
           child: Row(
             children: <Widget>[
-              IconTile(Icons.tune_rounded, iconSize: 21),
-              SizedBox(width: 12),
+              const IconTile(Icons.tune_rounded, iconSize: 21),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'تخصيص الإشعارات والتنبيهات',
-                      style: TextStyle(
+                      context.l10n.customizeNotifications,
+                      style: const TextStyle(
                         fontSize: 14.5,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                         height: 1.3,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
-                      'تحكم في نغمة الأذان وتنبيهات المناسبات',
-                      style: TextStyle(
+                      context.l10n.controlAdhanAndEvents,
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textSecondary,
                         height: 1.45,
@@ -330,8 +367,8 @@ class _CustomizeCard extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(width: 8),
-              Icon(Icons.chevron_right, size: 21, color: AppColors.textMuted),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right, size: 21, color: AppColors.textMuted),
             ],
           ),
         ),

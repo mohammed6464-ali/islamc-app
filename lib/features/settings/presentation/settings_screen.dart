@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 
-import '../../../core/data/demo_data.dart';
+import '../../../core/app_info.dart';
+import '../../../core/l10n/app_copy.dart';
+import '../../../core/l10n/app_language.dart';
+import '../../../core/legal/app_legal.dart';
 import '../../../core/navigation/app_routes.dart';
+import '../../../core/prayer/prayer_calc_method.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/state/app_state.dart';
 import '../../../core/theme/app_colors.dart';
@@ -16,6 +21,8 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final copy = AppCopy(context.l10n);
+    final l10n = copy.l10n;
 
     return Column(
       children: <Widget>[
@@ -24,17 +31,17 @@ class SettingsScreen extends StatelessWidget {
           child: AppScreenHeader(
             leading: HeaderIconButton(
               icon: Icons.location_on_outlined,
-              tooltip: 'تغيير المدينة',
+              tooltip: l10n.changeCity,
               onPressed: () =>
                   Navigator.of(context).pushNamed(AppRoutes.currentLocation),
             ),
-            title: state.city.fullName,
+            title: copy.cityFullName(state.city),
             titleColor: AppColors.textSecondary,
             titleSize: 12,
             actions: <Widget>[
               HeaderIconButton(
                 icon: Icons.explore_outlined,
-                tooltip: 'اتجاه القبلة',
+                tooltip: l10n.qiblaDirection,
                 onPressed: () =>
                     Navigator.of(context).pushNamed(AppRoutes.qibla),
               ),
@@ -50,8 +57,8 @@ class SettingsScreen extends StatelessWidget {
             children: <Widget>[
               const _SettingsIntro(),
               const SizedBox(height: 22),
-              const _GroupLabel(
-                label: 'الصلاة والتنبيهات',
+              _GroupLabel(
+                label: l10n.prayerAndAlerts,
                 icon: Icons.notifications_active_outlined,
               ),
               const SizedBox(height: 11),
@@ -59,32 +66,40 @@ class SettingsScreen extends StatelessWidget {
                 children: <Widget>[
                   SettingsTile(
                     icon: Icons.volume_up_outlined,
-                    title: 'تنبيهات الصلاة والأذان',
-                    subtitle: 'تخصيص الأذان وصوت التنبيه لكل فريضة',
+                    title: l10n.prayerNotifications,
+                    subtitle: l10n.prayerNotificationsSubtitle,
                     onTap: () => Navigator.of(
                       context,
                     ).pushNamed(AppRoutes.prayerNotifications),
                   ),
                   SettingsTile(
                     icon: Icons.calculate_outlined,
-                    title: 'طريقة حساب المواقيت',
-                    subtitle: 'المعتمد في حساب أوقات الفرائض',
-                    value: state.calculationMethod,
+                    title: l10n.calculationMethod,
+                    subtitle: l10n.calculationMethodSubtitle,
+                    value: copy.calcMethod(state.calculationMethodEnum),
                     valuePill: true,
                     onTap: () async {
                       final String? picked = await showOptionPicker(
                         context,
-                        title: 'طريقة حساب المواقيت',
-                        options: DemoData.calculationMethods,
-                        selected: state.calculationMethod,
+                        title: l10n.calculationMethod,
+                        options: copy.calcMethodLabels,
+                        selected: copy.calcMethod(state.calculationMethodEnum),
                       );
-                      if (picked != null) state.setCalculationMethod(picked);
+                      if (picked == null) {
+                        return;
+                      }
+                      final int index = copy.calcMethodLabels.indexOf(picked);
+                      if (index >= 0) {
+                        state.setCalculationMethodEnum(
+                          PrayerCalcMethod.values[index],
+                        );
+                      }
                     },
                   ),
                   SettingsTile(
                     icon: Icons.event_note_outlined,
-                    title: 'تنبيهات المناسبات والتقويم',
-                    subtitle: 'الأيام البيض، صيام عاشوراء، والأعياد المباركة',
+                    title: l10n.eventAlerts,
+                    subtitle: l10n.eventAlertsSubtitle,
                     trailing: AppToggle(
                       value: state.eventAlerts,
                       onChanged: state.setEventAlerts,
@@ -93,8 +108,8 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 22),
-              const _GroupLabel(
-                label: 'الموقع والطقس',
+              _GroupLabel(
+                label: l10n.locationAndWeather,
                 icon: Icons.near_me_outlined,
               ),
               const SizedBox(height: 11),
@@ -102,41 +117,87 @@ class SettingsScreen extends StatelessWidget {
                 children: <Widget>[
                   SettingsTile(
                     icon: Icons.apartment_rounded,
-                    title: 'المدينة الحالية',
-                    subtitle: 'تحديد الموقع لحساب القبلة والطقس بدقة',
-                    value: state.city.name,
+                    title: l10n.currentCity,
+                    subtitle: state.autoDetectLocation
+                        ? l10n.currentCitySubtitleAuto
+                        : l10n.currentCitySubtitleManual,
+                    value: copy.cityName(state.city),
                     onTap: () => Navigator.of(
                       context,
                     ).pushNamed(AppRoutes.currentLocation),
                   ),
                   SettingsTile(
+                    icon: Icons.gps_fixed_rounded,
+                    title: l10n.useDeviceLocation,
+                    subtitle: l10n.useDeviceLocationSubtitle,
+                    trailing: AppToggle(
+                      value: state.autoDetectLocation,
+                      onChanged: (bool value) async {
+                        await state.setAutoDetectLocation(value);
+                        if (!context.mounted) {
+                          return;
+                        }
+                        final next = AppCopy(context.l10n);
+                        if (value && state.locationError != null) {
+                          showAppMessage(
+                            context,
+                            next.locationFailure(state.locationError!),
+                          );
+                          return;
+                        }
+                        showAppMessage(
+                          context,
+                          value ? next.l10n.gpsEnabled : next.l10n.gpsManual,
+                        );
+                      },
+                    ),
+                  ),
+                  SettingsTile(
                     icon: Icons.thermostat_rounded,
-                    title: 'وحدة قياس درجة الحرارة',
-                    subtitle: 'عرض درجات الحرارة في شاشات الطقس',
-                    value: state.temperatureUnitLabel,
+                    title: l10n.temperatureUnit,
+                    subtitle: l10n.temperatureUnitSubtitle,
+                    value: state.temperatureUnitLabelFor(copy),
                     valuePill: true,
                     onTap: () {
                       state.setUseFahrenheit(!state.useFahrenheit);
                       showAppMessage(
                         context,
-                        'تم اعتماد وحدة ${state.temperatureUnitName}.',
+                        context.l10n.unitAdopted(
+                          state.temperatureUnitNameFor(AppCopy(context.l10n)),
+                        ),
                       );
                     },
                   ),
                 ],
               ),
               const SizedBox(height: 22),
-              const _GroupLabel(
-                label: 'المظهر واللغة',
+              _GroupLabel(
+                label: l10n.appearance,
                 icon: Icons.palette_outlined,
               ),
               const SizedBox(height: 11),
               SettingsGroup(
                 children: <Widget>[
                   SettingsTile(
+                    icon: Icons.calendar_view_month_outlined,
+                    title: l10n.calendarDisplay,
+                    subtitle: l10n.calendarDisplaySubtitle,
+                    value: state.hijriView ? l10n.hijri : l10n.gregorian,
+                    valuePill: true,
+                    onTap: () {
+                      state.setHijriView(!state.hijriView);
+                      showAppMessage(
+                        context,
+                        state.hijriView
+                            ? context.l10n.hijriAdopted
+                            : context.l10n.gregorianAdopted,
+                      );
+                    },
+                  ),
+                  SettingsTile(
                     icon: Icons.dark_mode_outlined,
-                    title: 'الوضع الداكن',
-                    subtitle: 'تقليل الإضاءة لراحة العين أثناء الليل',
+                    title: l10n.darkMode,
+                    subtitle: l10n.darkModeSubtitle,
                     trailing: AppToggle(
                       value: state.darkMode,
                       onChanged: (bool value) {
@@ -144,39 +205,59 @@ class SettingsScreen extends StatelessWidget {
                         showAppMessage(
                           context,
                           value
-                              ? 'الوضع الداكن مُفعّل كتفضيل — الثيم الداكن لم '
-                                    'يُنفّذ بعد.'
-                              : 'تم إيقاف الوضع الداكن.',
+                              ? context.l10n.darkModeOn
+                              : context.l10n.darkModeOff,
                         );
                       },
                     ),
                   ),
                   SettingsTile(
                     icon: Icons.translate_rounded,
-                    title: 'لغة التطبيق',
-                    subtitle: 'واجهة المستخدم والمواقيت',
-                    value: state.language,
+                    title: l10n.language,
+                    subtitle: l10n.languageSubtitle,
+                    value: state.isEnglish
+                        ? l10n.languageEnglish
+                        : l10n.languageArabic,
                     onTap: () async {
                       final String? picked = await showOptionPicker(
                         context,
-                        title: 'لغة التطبيق',
-                        options: DemoData.languages,
-                        selected: state.language,
+                        title: l10n.language,
+                        options: <String>[
+                          l10n.languageArabic,
+                          l10n.languageEnglish,
+                        ],
+                        selected: state.isEnglish
+                            ? l10n.languageEnglish
+                            : l10n.languageArabic,
                       );
-                      if (picked == null) return;
-                      state.setLanguage(picked);
-                      if (!context.mounted) return;
+                      if (picked == null) {
+                        return;
+                      }
+                      final bool english = picked == l10n.languageEnglish;
+                      state.setLanguage(
+                        english ? AppLanguage.english : AppLanguage.arabic,
+                      );
+                      if (!context.mounted) {
+                        return;
+                      }
+                      final next = AppCopy.forCode(
+                        english ? AppLanguage.english : AppLanguage.arabic,
+                      );
                       showAppMessage(
                         context,
-                        'تم حفظ التفضيل — الترجمة الكاملة غير متوفرة بعد.',
+                        next.l10n.languageChanged(
+                          english
+                              ? next.l10n.languageEnglish
+                              : next.l10n.languageArabic,
+                        ),
                       );
                     },
                   ),
                 ],
               ),
               const SizedBox(height: 22),
-              const _GroupLabel(
-                label: 'عن التطبيق',
+              _GroupLabel(
+                label: l10n.aboutSection,
                 icon: Icons.info_outline_rounded,
               ),
               const SizedBox(height: 11),
@@ -186,41 +267,54 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.explore_rounded,
                     iconBackground: AppColors.primary,
                     iconForeground: AppColors.surface,
-                    title: 'حول التطبيق',
-                    subtitle: 'رسالتنا في خدمة المجتمع وسكان المملكة',
+                    title: l10n.aboutApp,
+                    subtitle: AppLegal.appName,
                     onTap: () => _showAbout(context),
                   ),
                   SettingsTile(
                     icon: Icons.shield_outlined,
-                    title: 'سياسة الخصوصية',
-                    onTap: () => showAppMessage(
+                    title: l10n.privacyPolicy,
+                    onTap: () => _showMissingLegal(
                       context,
-                      'التطبيق لا يجمع أي بيانات — كل المحتوى تجريبي محلي.',
+                      title: l10n.privacyPolicy,
+                      body: l10n.privacyBody,
                     ),
                   ),
                   SettingsTile(
                     icon: Icons.gavel_rounded,
-                    title: 'الشروط والأحكام',
+                    title: l10n.terms,
+                    onTap: () => _showMissingLegal(
+                      context,
+                      title: l10n.terms,
+                      body: l10n.termsBody,
+                    ),
+                  ),
+                  SettingsTile(
+                    icon: Icons.mail_outline_rounded,
+                    title: l10n.contactUs,
                     onTap: () => showAppMessage(
                       context,
-                      'الشروط والأحكام ستتوفر في الإصدار النهائي.',
+                      l10n.contactUnavailable,
                     ),
                   ),
                   SettingsTile(
                     icon: Icons.star_outline_rounded,
-                    title: 'تقييم التطبيق',
+                    title: l10n.rateApp,
                     onTap: () => showAppMessage(
                       context,
-                      'التقييم غير متاح قبل النشر على المتجر.',
+                      l10n.rateUnavailable,
                     ),
                   ),
                   SettingsTile(
                     icon: Icons.share_outlined,
-                    title: 'مشاركة التطبيق',
-                    onTap: () => showAppMessage(
-                      context,
-                      'المشاركة غير مفعّلة في النسخة التجريبية.',
-                    ),
+                    title: l10n.shareApp,
+                    onTap: () {
+                      SharePlus.instance.share(
+                        ShareParams(
+                          text: '${AppLegal.appName}\n${context.l10n.homeTagline}',
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -234,26 +328,24 @@ class SettingsScreen extends StatelessWidget {
   }
 
   static void _showAbout(BuildContext context) {
+    final l10n = context.l10n;
     showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
         backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'حول التطبيق',
-          style: TextStyle(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          l10n.aboutApp,
+          style: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
           ),
         ),
-        content: const Text(
-          'مواقيتنا تطبيق تجريبي لعرض مواقيت الصلاة والقبلة والطقس والتقويم '
-          'الهجري. جميع البيانات في هذه النسخة ثابتة ولا تعتمد على أي خدمة '
-          'خارجية.',
-          style: TextStyle(
+        content: Text(
+          '${AppLegal.appName}\n${l10n.appVersionLabel(AppLegal.appName, AppInfo.version)}\n\n'
+          '${l10n.aboutBody}',
+          style: const TextStyle(
             fontSize: 13,
             color: AppColors.textSecondary,
             height: 1.8,
@@ -262,9 +354,51 @@ class SettingsScreen extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text(
-              'حسنًا',
-              style: TextStyle(
+            child: Text(
+              l10n.ok,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static void _showMissingLegal(
+    BuildContext context, {
+    required String title,
+    required String body,
+  }) {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        content: Text(
+          body,
+          style: const TextStyle(
+            fontSize: 13,
+            color: AppColors.textSecondary,
+            height: 1.8,
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(
+              context.l10n.ok,
+              style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 color: AppColors.primary,
               ),
@@ -281,26 +415,27 @@ class _SettingsIntro extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                'الإعدادات',
-                style: TextStyle(
+                l10n.settings,
+                style: const TextStyle(
                   fontSize: 27,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primary,
                   height: 1.3,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'تخصيص مواقيت الصلاة، التنبيهات، وتفضيلات التطبيق',
-                style: TextStyle(
+                l10n.settingsIntro,
+                style: const TextStyle(
                   fontSize: 11.5,
                   color: AppColors.textSecondary,
                   height: 1.5,
@@ -358,22 +493,22 @@ class _VersionFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: <Widget>[
         Text(
-          DemoData.appVersion,
+          context.l10n.appVersionLabel(AppLegal.appName, AppInfo.version),
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: AppColors.textSecondary,
           ),
         ),
-        SizedBox(height: 5),
+        const SizedBox(height: 5),
         Text(
-          DemoData.appTagline,
+          context.l10n.homeTagline,
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 11, color: AppColors.textMuted),
+          style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
         ),
       ],
     );

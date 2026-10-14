@@ -109,8 +109,8 @@ class SettingsTile extends StatelessWidget {
             trailing!
           else if (onTap != null)
             const Icon(
-              Icons.chevron_right,
-              size: 21,
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
               color: AppColors.textMuted,
             ),
         ],

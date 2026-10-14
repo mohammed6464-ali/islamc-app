@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../location/app_geo.dart';
+import '../prayer/prayer_calc_method.dart';
 import 'hijri_date.dart';
 import 'models.dart';
 
@@ -20,7 +22,7 @@ class DemoData {
 
   // ------------------------------------------------------------------ home
   static const String greetingSmall = 'مرحبًا بك';
-  static const String greeting = 'السلام عليكم ورحمة الله';
+  static const String greeting = 'تقويمك .. مواقيتك .. في مكان واحد';
   static const String prayerTimesHeader = 'مواقيت صلاة اليوم';
 
   static const String calendarName = 'تقويم أم القرى';
@@ -94,12 +96,12 @@ class DemoData {
     CityData(
       id: 'riyadh',
       name: 'الرياض',
+      nameEn: 'Riyadh',
       country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
       region: 'المنطقة الوسطى',
-      offsetMinutes: 0,
-      qiblaAngle: 244,
-      qiblaDirection: 'جنوب غرب',
-      distanceToMakkah: 790,
+      latitude: 24.7136,
+      longitude: 46.6753,
       station: 'محطة مطار الملك خالد الدولي',
       temperatureDelta: 0,
       condition: 'غائم جزئيًا',
@@ -112,12 +114,12 @@ class DemoData {
     CityData(
       id: 'makkah',
       name: 'مكة المكرمة',
+      nameEn: 'Makkah',
       country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
       region: 'منطقة مكة المكرمة',
-      offsetMinutes: 23,
-      qiblaAngle: 0,
-      qiblaDirection: 'اتجاه الكعبة',
-      distanceToMakkah: 0,
+      latitude: 21.4225,
+      longitude: 39.8262,
       station: 'محطة مكة المكرمة',
       temperatureDelta: 7,
       condition: 'صحو وحار',
@@ -131,12 +133,12 @@ class DemoData {
     CityData(
       id: 'madinah',
       name: 'المدينة المنورة',
+      nameEn: 'Madinah',
       country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
       region: 'منطقة المدينة المنورة',
-      offsetMinutes: 19,
-      qiblaAngle: 176,
-      qiblaDirection: 'جنوب',
-      distanceToMakkah: 340,
+      latitude: 24.4672,
+      longitude: 39.6024,
       station: 'محطة مطار الأمير محمد بن عبدالعزيز',
       temperatureDelta: 3,
       condition: 'صحو ومستقر',
@@ -150,12 +152,12 @@ class DemoData {
     CityData(
       id: 'jeddah',
       name: 'جدة',
+      nameEn: 'Jeddah',
       country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
       region: 'المنطقة الغربية',
-      offsetMinutes: 25,
-      qiblaAngle: 101,
-      qiblaDirection: 'شرق',
-      distanceToMakkah: 65,
+      latitude: 21.5433,
+      longitude: 39.1728,
       station: 'محطة مطار الملك عبدالعزيز الدولي',
       temperatureDelta: 4,
       condition: 'رطب ومائل للحرارة',
@@ -168,12 +170,12 @@ class DemoData {
     CityData(
       id: 'dammam',
       name: 'الدمام',
+      nameEn: 'Dammam',
       country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
       region: 'المنطقة الشرقية',
-      offsetMinutes: -9,
-      qiblaAngle: 247,
-      qiblaDirection: 'جنوب غرب',
-      distanceToMakkah: 1070,
+      latitude: 26.4207,
+      longitude: 50.0888,
       station: 'محطة مطار الملك فهد الدولي',
       temperatureDelta: 2,
       condition: 'رطب وغائم جزئيًا',
@@ -186,12 +188,12 @@ class DemoData {
     CityData(
       id: 'khobar',
       name: 'الخبر',
+      nameEn: 'Khobar',
       country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
       region: 'المنطقة الشرقية',
-      offsetMinutes: -10,
-      qiblaAngle: 247,
-      qiblaDirection: 'جنوب غرب',
-      distanceToMakkah: 1080,
+      latitude: 26.2172,
+      longitude: 50.1971,
       station: 'محطة الخبر الساحلية',
       temperatureDelta: 2,
       condition: 'رطب مع نسيم بحري',
@@ -202,14 +204,32 @@ class DemoData {
       uvIndex: 6,
     ),
     CityData(
+      id: 'taif',
+      name: 'الطائف',
+      nameEn: 'Taif',
+      country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
+      region: 'منطقة مكة المكرمة',
+      latitude: 21.2703,
+      longitude: 40.4158,
+      station: 'محطة مطار الطائف الدولي',
+      temperatureDelta: -4,
+      condition: 'معتدل وصحو',
+      humidity: 38,
+      windSpeed: 10,
+      windDirection: 'غربية',
+      cloudCover: 15,
+      uvIndex: 7,
+    ),
+    CityData(
       id: 'abha',
       name: 'أبها',
+      nameEn: 'Abha',
       country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
       region: 'منطقة عسير',
-      offsetMinutes: 30,
-      qiblaAngle: 335,
-      qiblaDirection: 'شمال غرب',
-      distanceToMakkah: 560,
+      latitude: 18.2164,
+      longitude: 42.5053,
       station: 'محطة مطار أبها الإقليمي',
       temperatureDelta: -10,
       condition: 'معتدل مع ضباب خفيف',
@@ -222,12 +242,12 @@ class DemoData {
     CityData(
       id: 'tabuk',
       name: 'تبوك',
+      nameEn: 'Tabuk',
       country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
       region: 'منطقة تبوك',
-      offsetMinutes: 40,
-      qiblaAngle: 162,
-      qiblaDirection: 'جنوب',
-      distanceToMakkah: 850,
+      latitude: 28.3838,
+      longitude: 36.5550,
       station: 'محطة مطار الأمير سلطان بن عبدالعزيز',
       temperatureDelta: -5,
       condition: 'صحو مع رياح خفيفة',
@@ -237,10 +257,85 @@ class DemoData {
       cloudCover: 12,
       uvIndex: 7,
     ),
+    CityData(
+      id: 'buraydah',
+      name: 'بريدة',
+      nameEn: 'Buraydah',
+      country: 'المملكة العربية السعودية',
+      countryEn: 'Saudi Arabia',
+      region: 'منطقة القصيم',
+      latitude: 26.3260,
+      longitude: 43.9750,
+      station: 'محطة القصيم',
+      temperatureDelta: -1,
+      condition: 'صحو ودافئ',
+      humidity: 28,
+      windSpeed: 13,
+      windDirection: 'شمالية',
+      cloudCover: 10,
+      uvIndex: 7,
+    ),
   ];
 
   static CityData cityById(String id) =>
       cities.firstWhere((CityData c) => c.id == id, orElse: () => cities.first);
+
+  static CityData get riyadh => cityById('riyadh');
+
+  static CityData nearestCity(double latitude, double longitude) {
+    CityData best = cities.first;
+    double bestDistance = AppGeo.haversineKm(
+      latitude,
+      longitude,
+      best.latitude,
+      best.longitude,
+    );
+    for (final CityData city in cities.skip(1)) {
+      final double distance = AppGeo.haversineKm(
+        latitude,
+        longitude,
+        city.latitude,
+        city.longitude,
+      );
+      if (distance < bestDistance) {
+        best = city;
+        bestDistance = distance;
+      }
+    }
+    return best;
+  }
+
+  static CityData? matchCity({
+    required double latitude,
+    required double longitude,
+    String? name,
+  }) {
+    if (name != null && name.trim().isNotEmpty) {
+      final String needle = name.trim();
+      for (final CityData city in cities) {
+        if (city.name == needle ||
+            needle.contains(city.name) ||
+            city.name.contains(needle) ||
+            (city.nameEn.isNotEmpty &&
+                (city.nameEn.toLowerCase() == needle.toLowerCase() ||
+                    needle.toLowerCase().contains(city.nameEn.toLowerCase()) ||
+                    city.nameEn.toLowerCase().contains(needle.toLowerCase())))) {
+          return city;
+        }
+      }
+    }
+    final CityData nearest = nearestCity(latitude, longitude);
+    final double distance = AppGeo.haversineKm(
+      latitude,
+      longitude,
+      nearest.latitude,
+      nearest.longitude,
+    );
+    if (distance <= 35) {
+      return nearest;
+    }
+    return null;
+  }
 
   // -------------------------------------------------------------- weather
   static const int baseTemperature = 28;
@@ -342,39 +437,65 @@ class DemoData {
     IslamicEvent(
       id: 'national-day',
       title: 'اليوم الوطني السعودي 96',
+      titleEn: 'Saudi National Day 96',
       date: DateTime(2026, 9, 23),
       kind: EventKind.national,
       icon: Icons.flag_outlined,
       badge: 'مناسبة وطنية',
+      badgeEn: 'National occasion',
       note: 'إجازة رسمية لجميع القطاعات',
+      noteEn: 'Official holiday for all sectors',
       actionLabel: 'التفاصيل',
+      actionLabelEn: 'Details',
       tagline: 'نحلم ونحقق • مجد وعز وسؤدد يعانق السماء',
+      taglineEn: 'We dream and we achieve • Glory and pride reaching the sky',
       ownerBadge: 'المملكة العربية السعودية',
+      ownerBadgeEn: 'Saudi Arabia',
       statusPills: <String>['مناسبة وطنية رسمية', 'إجازة رسمية'],
+      statusPillsEn: <String>['Official national occasion', 'Official holiday'],
       description:
           'يوم توحيد المملكة العربية السعودية على يد الملك عبد العزيز بن '
           'عبد الرحمن آل سعود رحمه الله. يحتفي به الوطن في 23 سبتمبر من كل '
           'عام بمشاعر الفخر والاعتزاز.',
+      descriptionEn:
+          'The day the Kingdom of Saudi Arabia was unified by King Abdulaziz '
+          'bin Abdulrahman Al Saud, may God have mercy on him.',
       highlight:
           'تقام فيه الفعاليات الوطنية، العروض الجوية، والبرامج الثقافية في '
           'مختلف مناطق المملكة.',
+      highlightEn:
+          'National events, air shows, and cultural programs are held across '
+          'the Kingdom.',
     ),
     IslamicEvent(
       id: 'mawlid',
       title: 'المولد النبوي الشريف',
+      titleEn: "The Prophet's Birthday",
       date: DateTime(2026, 9, 4),
       kind: EventKind.islamic,
       icon: Icons.mosque_outlined,
       badge: 'مناسبة إسلامية',
+      badgeEn: 'Islamic occasion',
       note: 'سيرة عطرة ومجالس ذكر',
+      noteEn: 'Noble biography and gatherings of remembrance',
       actionLabel: 'الأدعية والأذكار',
+      actionLabelEn: 'Supplications and remembrance',
       tagline: 'ذكرى مولد خير الأنام صلى الله عليه وسلم',
+      taglineEn: 'The birth of the best of creation, peace be upon him',
       ownerBadge: 'التقويم الهجري',
+      ownerBadgeEn: 'Hijri calendar',
       statusPills: <String>['مناسبة إسلامية', 'يوم عمل رسمي'],
+      statusPillsEn: <String>['Islamic occasion', 'Working day'],
       description:
           'ذكرى مولد النبي محمد صلى الله عليه وسلم في الثاني عشر من ربيع '
           'الأول. يستحضر فيها المسلمون سيرته العطرة وأخلاقه الكريمة.',
+      descriptionEn:
+          'The birthday of Prophet Muhammad, peace be upon him, on 12 Rabi\' '
+          'al-Awwal. It is not a general public holiday in the Kingdom.',
       highlight: 'تُعقد فيها مجالس الذكر وقراءة السيرة النبوية في المساجد.',
+      highlightEn:
+          'Gatherings of remembrance and readings of the Prophetic biography '
+          'are held in mosques.',
     ),
   ];
 
@@ -395,8 +516,12 @@ class DemoData {
   /// `اليوم الوطني السعودي 96` is the card promoted on the home screen.
   static IslamicEvent get featuredEvent => events.first;
 
-  static int daysUntil(DateTime date) =>
-      DateTime(date.year, date.month, date.day).difference(today).inDays;
+  static int daysUntil(DateTime date, [DateTime? from]) {
+    final DateTime origin = from ?? today;
+    return DateTime(date.year, date.month, date.day)
+        .difference(DateTime(origin.year, origin.month, origin.day))
+        .inDays;
+  }
 
   // -------------------------------------------------------- notifications
   static const List<AppNotification> notifications = <AppNotification>[
@@ -431,18 +556,11 @@ class DemoData {
   ];
 
   // ------------------------------------------------------------- settings
-  static const List<String> calculationMethods = <String>[
-    'تقويم أم القرى',
-    'رابطة العالم الإسلامي',
-    'الهيئة المصرية العامة للمساحة',
-    'جامعة العلوم الإسلامية بكراتشي',
-  ];
+  static const List<String> calculationMethods = PrayerCalcMethod.labels;
 
   static const List<String> adhanSounds = <String>[
-    'أذان الحرم المكي الشريف',
-    'أذان الحرم النبوي الشريف',
-    'أذان المسجد الأقصى',
-    'نغمة تنبيه قصيرة',
+    'أذان الحرم المكي',
+    'أذان المسجد النبوي',
   ];
 
   static const List<String> languages = <String>['العربية', 'English'];
@@ -455,8 +573,8 @@ class DemoData {
     _ => 'قبل $minutes دقائق',
   };
 
-  static const String appVersion = 'مواقيتنا — الإصدار 1.0.0 (Saudi Arabia)';
-  static const String appTagline = 'صُمم بعناية للمسلمين حول العالم وفي المملكة';
+  static const String appVersion = 'تقويم ومواقيت — الإصدار 1.0.0';
+  static const String appTagline = 'تقويمك .. مواقيتك .. في مكان واحد';
 
   // ------------------------------------------------------------ utilities
   static String hijriLabel(DateTime date) =>

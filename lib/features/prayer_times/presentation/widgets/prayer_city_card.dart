@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/data/hijri_date.dart';
-import '../../../../core/data/demo_data.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
@@ -17,9 +17,9 @@ class PrayerCityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
     final String dates =
-        '${HijriDate.fromGregorian(DemoData.today).formatted} — '
-        '${GregorianLabels.formatted(DemoData.today)}';
+        '${copy.hijriDate(state.hijriToday)} — ${copy.gregorianDate(state.today)}';
 
     return AppCard(
       radius: 18,
@@ -36,7 +36,7 @@ class PrayerCityCard extends StatelessWidget {
                   children: <Widget>[
                     Flexible(
                       child: Text(
-                        state.city.name,
+                        copy.cityName(state.city),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -50,7 +50,7 @@ class PrayerCityCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Flexible(
                       child: AppBadge(
-                        state.city.country,
+                        copy.countryName(state.city),
                         background: AppColors.pillGray,
                         foreground: AppColors.textSecondary,
                         fontSize: 10,
@@ -76,7 +76,7 @@ class PrayerCityCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           IconButton(
-            tooltip: 'تغيير المدينة',
+            tooltip: context.l10n.changeCity,
             visualDensity: VisualDensity.compact,
             onPressed: () =>
                 Navigator.of(context).pushNamed(AppRoutes.currentLocation),

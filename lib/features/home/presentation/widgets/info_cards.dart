@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
@@ -21,10 +23,12 @@ class InfoCardsRow extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: InfoCard(
-              title: 'الإمساك والإفطار',
+              title: context.l10n.imsakIftar,
               icon: Icons.access_time_rounded,
-              value: 'الإفطار: ${maghrib.timeWithPeriod}',
-              note: 'صيام الاثنين والخميس',
+              value: context.l10n.iftarAt(
+                AppCopy(context.l10n).timeWithPeriod(maghrib),
+              ),
+              note: context.l10n.mondayThursdayFast,
               onTap: () =>
                   Navigator.of(context).pushNamed(AppRoutes.prayerTimes),
             ),
@@ -32,11 +36,14 @@ class InfoCardsRow extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: InfoCard(
-              title: 'زاوية القبلة',
+              title: context.l10n.qiblaAngleLabel,
               icon: Icons.wifi_tethering_rounded,
               iconColor: AppColors.primary,
-              value: state.city.qiblaLabel,
-              note: 'دقة البوصلة عالية',
+              value: AppCopy(context.l10n).qiblaLabel(
+                state.city.qiblaAngle.toDouble(),
+                atKaaba: state.city.distanceToMakkah < 2,
+              ),
+              note: context.l10n.compassHighAccuracy,
               noteColor: AppColors.accentGreen,
               onTap: () => Navigator.of(context).pushNamed(AppRoutes.qibla),
             ),

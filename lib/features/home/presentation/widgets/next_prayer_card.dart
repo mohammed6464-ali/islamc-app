@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
@@ -20,9 +22,9 @@ class NextPrayerCard extends StatelessWidget {
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
           colors: <Color>[
-            Color(0xFF0C6650),
-            Color(0xFF085E45),
-            Color(0xFF065640),
+            AppColors.accentGreen,
+            AppColors.primary,
+            AppColors.darkGreen,
           ],
         ),
         boxShadow: <BoxShadow>[
@@ -76,7 +78,8 @@ class _HeroTopRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-        Container(
+        Flexible(
+          child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.10),
@@ -95,19 +98,25 @@ class _HeroTopRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 7),
-              Text(
-                'الصلاة القادمة',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.95),
+              Flexible(
+                child: Text(
+                  context.l10n.nextPrayer,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.95),
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        const Spacer(),
-        Container(
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.14),
@@ -122,16 +131,23 @@ class _HeroTopRow extends StatelessWidget {
                 color: Colors.white.withValues(alpha: 0.85),
               ),
               const SizedBox(width: 6),
-              Text(
-                'الأذان مفعّل',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withValues(alpha: 0.85),
+              Flexible(
+                child: Text(
+                  AppScope.of(context).masterPrayerAlerts
+                      ? context.l10n.adhanEnabled
+                      : context.l10n.adhanDisabled,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
                 ),
               ),
             ],
           ),
+        ),
         ),
       ],
     );
@@ -158,7 +174,7 @@ class _HeroMainRow extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 alignment: AlignmentDirectional.centerStart,
                 child: Text(
-                  next.longName,
+                  AppCopy(context.l10n).prayerLongName(next.id),
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
@@ -169,7 +185,7 @@ class _HeroMainRow extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Text(
-                'موعد الأذان حسب أم القرى',
+                context.l10n.adhanTimeUmmAlQura,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -218,7 +234,9 @@ class _HeroMainRow extends StatelessWidget {
             Align(
               alignment: AlignmentDirectional.centerStart,
               child: Text(
-                next.minutes < 12 * 60 ? 'صباحًا' : 'مساءً',
+                next.minutes < 12 * 60
+                    ? context.l10n.morning
+                    : context.l10n.evening,
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w400,
@@ -257,15 +275,19 @@ class _CountdownPanel extends StatelessWidget {
                 color: Colors.white.withValues(alpha: 0.75),
               ),
               const SizedBox(width: 7),
-              Text(
-                'متبقي على الصلاة',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white.withValues(alpha: 0.78),
+              Expanded(
+                child: Text(
+                  context.l10n.remainingUntilPrayer,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withValues(alpha: 0.78),
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Text(
                 state.countdown,
                 textDirection: TextDirection.ltr,
@@ -296,8 +318,8 @@ class _CountdownPanel extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: <Color>[
-                            Color(0xFF7BE3BB),
-                            Color(0xFF9DF3D1),
+                            AppColors.lightMint,
+                            Color(0xFFE8F3EE),
                           ],
                         ),
                       ),

@@ -1,20 +1,28 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/theme/app_colors.dart';
 
-/// Static demo compass. There is no magnetometer behind it — the needle sits
-/// still and the Qibla arrow points at the fixed angle supplied by the city.
+/// Qibla compass. When [heading] is null the dial stays north-up (same as the
+/// original layout). With a heading, the rose rotates so the top of the screen
+/// is the device facing direction and the Kaaba marker stays on the true
+/// bearing.
 class QiblaCompass extends StatelessWidget {
   const QiblaCompass({
     super.key,
     required this.qiblaAngle,
     required this.progress,
+    this.heading,
   });
 
-  /// Degrees clockwise from north.
+  /// Degrees clockwise from true north.
   final double qiblaAngle;
+
+  /// Device true heading, 0–360, or null when the sensor is unavailable.
+  final double? heading;
 
   /// 0 → 1 entry animation.
   final double progress;
@@ -34,14 +42,38 @@ class QiblaCompass extends StatelessWidget {
               size: Size.square(side),
               painter: _CompassPainter(
                 qiblaAngle: qiblaAngle,
+                heading: heading,
                 progress: progress,
+                textDirection: Directionality.of(context),
+                cardinals: <String>[
+                  context.l10n.cardinalN,
+                  context.l10n.cardinalE,
+                  context.l10n.cardinalS,
+                  context.l10n.cardinalW,
+                ],
               ),
             ),
-            _QiblaMarker(side: side, angle: qiblaAngle, progress: progress),
+            _QiblaMarker(
+              side: side,
+              angle: _markerAngle,
+              progress: progress,
+            ),
           ],
         ),
       ),
     );
+  }
+
+  double get _markerAngle {
+    final double? heading = this.heading;
+    if (heading == null) {
+      return qiblaAngle;
+    }
+    var delta = (qiblaAngle - heading) % 360;
+    if (delta < 0) {
+      delta += 360;
+    }
+    return delta;
   }
 }
 
@@ -119,16 +151,25 @@ class _QiblaMarker extends StatelessWidget {
 }
 
 class _CompassPainter extends CustomPainter {
-  _CompassPainter({required this.qiblaAngle, required this.progress});
+  _CompassPainter({
+    required this.qiblaAngle,
+    required this.progress,
+    required this.cardinals,
+    required this.textDirection,
+    this.heading,
+  });
 
   final double qiblaAngle;
+  final double? heading;
   final double progress;
+  final List<String> cardinals;
+  final TextDirection textDirection;
 
-  static const List<_Cardinal> _cardinals = <_Cardinal>[
-    _Cardinal('ش', 0),
-    _Cardinal('ق', 90),
-    _Cardinal('ج', 180),
-    _Cardinal('غ', 270),
+  List<_Cardinal> get _cardinalMarks => <_Cardinal>[
+    _Cardinal(cardinals[0], 0),
+    _Cardinal(cardinals[1], 90),
+    _Cardinal(cardinals[2], 180),
+    _Cardinal(cardinals[3], 270),
   ];
 
   static const List<_Cardinal> _degrees = <_Cardinal>[
@@ -170,6 +211,13 @@ class _CompassPainter extends CustomPainter {
         ..color = AppColors.divider,
     );
 
+    canvas.save();
+    if (heading != null) {
+      canvas.translate(center.dx, center.dy);
+      canvas.rotate(-heading! * math.pi / 180);
+      canvas.translate(-center.dx, -center.dy);
+    }
+
     _drawDashedCircle(canvas, center, r * 0.50);
     _drawTicks(canvas, center, r);
 
@@ -195,22 +243,26 @@ class _CompassPainter extends CustomPainter {
     );
     _drawArrowHead(canvas, tip, radians);
 
-    // Idle needle, parked slightly off north.
-    final double needleAngle = (18 - 90) * math.pi / 180;
-    final Offset needleStart =
-        center + Offset(math.cos(needleAngle), math.sin(needleAngle)) * (r * 0.56);
-    final Offset needleEnd =
-        center + Offset(math.cos(needleAngle), math.sin(needleAngle)) * (r * 0.64);
-    canvas.drawLine(
-      needleStart,
-      needleEnd,
-      Paint()
-        ..strokeWidth = 5
-        ..strokeCap = StrokeCap.round
-        ..color = AppColors.divider,
-    );
+    if (heading == null) {
+      // Idle needle, parked slightly off north — original north-up layout.
+      final double needleAngle = (18 - 90) * math.pi / 180;
+      final Offset needleStart =
+          center +
+          Offset(math.cos(needleAngle), math.sin(needleAngle)) * (r * 0.56);
+      final Offset needleEnd =
+          center +
+          Offset(math.cos(needleAngle), math.sin(needleAngle)) * (r * 0.64);
+      canvas.drawLine(
+        needleStart,
+        needleEnd,
+        Paint()
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round
+          ..color = AppColors.divider,
+      );
+    }
 
-    for (final _Cardinal cardinal in _cardinals) {
+    for (final _Cardinal cardinal in _cardinalMarks) {
       _drawLabel(
         canvas,
         center,
@@ -238,6 +290,26 @@ class _CompassPainter extends CustomPainter {
           fontWeight: active ? FontWeight.w700 : FontWeight.w500,
           color: active ? AppColors.primary : AppColors.textMuted,
         ),
+      );
+    }
+
+    canvas.restore();
+
+    if (heading != null) {
+      final double needleAngle = (0 - 90) * math.pi / 180;
+      final Offset needleStart =
+          center +
+          Offset(math.cos(needleAngle), math.sin(needleAngle)) * (r * 0.56);
+      final Offset needleEnd =
+          center +
+          Offset(math.cos(needleAngle), math.sin(needleAngle)) * (r * 0.64);
+      canvas.drawLine(
+        needleStart,
+        needleEnd,
+        Paint()
+          ..strokeWidth = 5
+          ..strokeCap = StrokeCap.round
+          ..color = AppColors.divider,
       );
     }
   }
@@ -305,7 +377,7 @@ class _CompassPainter extends CustomPainter {
         center + Offset(math.cos(radians), math.sin(radians)) * radius;
     final TextPainter painter = TextPainter(
       text: TextSpan(text: cardinal.label, style: style),
-      textDirection: TextDirection.rtl,
+      textDirection: textDirection,
     )..layout();
     painter.paint(
       canvas,
@@ -315,7 +387,11 @@ class _CompassPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_CompassPainter oldDelegate) =>
-      oldDelegate.qiblaAngle != qiblaAngle || oldDelegate.progress != progress;
+      oldDelegate.qiblaAngle != qiblaAngle ||
+      oldDelegate.heading != heading ||
+      oldDelegate.progress != progress ||
+      oldDelegate.textDirection != textDirection ||
+      !listEquals(oldDelegate.cardinals, cardinals);
 }
 
 class _Cardinal {

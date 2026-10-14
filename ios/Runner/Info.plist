@@ -6,6 +6,11 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ar</string>
+		<string>en</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>تقويم ومواقيت</string>
 	<key>CFBundleExecutable</key>
@@ -26,6 +31,12 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نستخدم موقعك أثناء استخدام التطبيق لحساب مواقيت الصلاة حسب مدينتك.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>نضيف المناسبة إلى تقويم هاتفك عند طلبك ذلك.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>نضيف المناسبة إلى تقويم هاتفك عند طلبك ذلك.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

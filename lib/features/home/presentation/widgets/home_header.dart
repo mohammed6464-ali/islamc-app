@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/data/demo_data.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/navigation/main_shell.dart';
 import '../../../../core/state/app_scope.dart';
@@ -30,7 +31,7 @@ class HomeTopBar extends StatelessWidget {
                   const SizedBox(width: 7),
                   Flexible(
                     child: Text(
-                      AppScope.of(context).city.fullName,
+                      AppCopy(context.l10n).cityFullName(AppScope.of(context).city),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -54,7 +55,7 @@ class HomeTopBar extends StatelessWidget {
           const _NotificationBell(),
           const SizedBox(width: 14),
           IconButton(
-            tooltip: 'الإعدادات',
+            tooltip: context.l10n.settings,
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
@@ -80,7 +81,7 @@ class _NotificationBell extends StatelessWidget {
 
     return Semantics(
       button: true,
-      label: 'الإشعارات',
+      label: context.l10n.notifications,
       child: InkResponse(
         radius: 22,
         onTap: () => Navigator.of(context).pushNamed(AppRoutes.notifications),
@@ -99,9 +100,10 @@ class _NotificationBell extends StatelessWidget {
                 ),
               ),
               if (hasUnread)
-                Positioned(
+                Positioned.directional(
+                  textDirection: Directionality.of(context),
                   top: -2,
-                  right: 0,
+                  end: 0,
                   child: Container(
                     width: 7,
                     height: 7,
@@ -132,7 +134,7 @@ class HomeGreeting extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F2ED),
+            color: AppColors.pillGray,
             borderRadius: BorderRadius.circular(14),
           ),
           alignment: Alignment.center,
@@ -148,8 +150,8 @@ class HomeGreeting extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const Text(
-                DemoData.greetingSmall,
+              Text(
+                context.l10n.welcome,
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w400,
@@ -159,14 +161,14 @@ class HomeGreeting extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                DemoData.greeting,
-                maxLines: 1,
+                context.l10n.homeTagline,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
-                  fontSize: 15,
+                  fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
-                  height: 1.3,
+                  height: 1.35,
                 ),
               ),
             ],
@@ -196,7 +198,9 @@ class _TimezonePill extends StatelessWidget {
           const _GreenDot(),
           const SizedBox(width: 6),
           Text(
-            AppScope.of(context).timezoneLabel,
+            context.l10n.timezoneOf(
+              AppCopy(context.l10n).cityName(AppScope.of(context).city),
+            ),
             style: const TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w600,

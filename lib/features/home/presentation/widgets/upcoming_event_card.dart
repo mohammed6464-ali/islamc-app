@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/data/demo_data.dart';
-import '../../../../core/data/hijri_date.dart';
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/app_routes.dart';
+import '../../../../core/state/app_scope.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_card.dart';
 
@@ -12,7 +13,11 @@ class UpcomingEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final IslamicEvent event = DemoData.featuredEvent;
+    final IslamicEvent? event = AppScope.of(context).featuredEvent;
+    if (event == null) {
+      return const SizedBox.shrink();
+    }
+    final int days = AppScope.of(context).daysUntil(event.date);
 
     return InkWell(
       borderRadius: BorderRadius.circular(18),
@@ -42,7 +47,7 @@ class UpcomingEventCard extends StatelessWidget {
             child: Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: Color(0xFFCBCFC9),
+              color: AppColors.divider,
             ),
           ),
           Padding(
@@ -69,8 +74,8 @@ class UpcomingEventCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      const Text(
-                        'المناسبة القادمة',
+                      Text(
+                        context.l10n.upcomingEvents,
                         style: TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.w500,
@@ -80,7 +85,7 @@ class UpcomingEventCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        event.title,
+                        AppCopy(context.l10n).eventTitle(event),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -92,7 +97,7 @@ class UpcomingEventCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        GregorianLabels.withWeekday(event.date),
+                        AppCopy(context.l10n).weekdayDate(event.date),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -116,7 +121,7 @@ class UpcomingEventCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Text(
-                      'متبقي ${DemoData.daysUntil(event.date)} يومًا',
+                      AppCopy(context.l10n).remainingDays(days),
                       style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w600,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_language.dart';
 import '../theme/app_colors.dart';
 
 class CustomBottomNavigation extends StatelessWidget {
@@ -12,19 +13,25 @@ class CustomBottomNavigation extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const List<_NavItem> _items = <_NavItem>[
-    _NavItem('الرئيسية', Icons.home_outlined),
-    _NavItem('الطقس', Icons.wb_sunny_outlined),
-    _NavItem('التقويم', Icons.calendar_month_outlined),
-    _NavItem('الإعدادات', Icons.settings_outlined),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final List<_NavItem> items = <_NavItem>[
+      _NavItem(l10n.navHome, Icons.home_outlined),
+      _NavItem(l10n.navWeather, Icons.wb_sunny_outlined),
+      _NavItem(l10n.navCalendar, Icons.calendar_month_outlined),
+      _NavItem(l10n.navSettings, Icons.settings_outlined),
+    ];
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.divider)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.darkBorder
+                : AppColors.divider,
+          ),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -34,10 +41,10 @@ class CustomBottomNavigation extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             child: Row(
               children: <Widget>[
-                for (int i = 0; i < _items.length; i++)
+                for (int i = 0; i < items.length; i++)
                   Expanded(
                     child: _NavButton(
-                      item: _items[i],
+                      item: items[i],
                       selected: i == currentIndex,
                       onTap: () => onTap(i),
                     ),
@@ -72,7 +79,7 @@ class _NavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color contentColor =
-        selected ? AppColors.primary : const Color(0xFF2E3531);
+        selected ? AppColors.primary : AppColors.textPrimary;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,

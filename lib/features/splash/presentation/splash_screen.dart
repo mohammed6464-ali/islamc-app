@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/l10n/app_language.dart';
 import '../../../core/navigation/app_routes.dart';
+import '../../../core/state/app_scope.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/islamic_geometric_pattern.dart';
 import 'widgets/splash_loading_section.dart';
@@ -105,7 +107,10 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
     _navigated = true;
-    Navigator.of(context).pushReplacementNamed(AppRoutes.locationPermission);
+    final String next = AppScope.read(context).onboardingComplete
+        ? AppRoutes.shell
+        : AppRoutes.locationPermission;
+    Navigator.of(context).pushReplacementNamed(next);
   }
 
   @override
@@ -212,8 +217,8 @@ class _BrandBlock extends StatelessWidget {
           opacity: titleFade,
           child: ScaleTransition(
             scale: titleScale,
-            child: const Text(
-              'مواقيتنا',
+            child: Text(
+              context.l10n.appName,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 40,
@@ -237,8 +242,8 @@ class _BrandBlock extends StatelessWidget {
               ),
             );
           },
-          child: const Text(
-            'معك في كل وقت',
+          child: Text(
+            context.l10n.splashTagline,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 19,
@@ -283,12 +288,12 @@ class _UmmAlQuraBadge extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.star, size: 11, color: Color(0xFF0B4733)),
+            child: const Icon(Icons.star, size: 11, color: AppColors.darkGreen),
           ),
           const SizedBox(width: 9),
           Flexible(
             child: Text(
-              'تقويم أم القرى المعتمد • رفيقك اليومي',
+              context.l10n.splashCompanion,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

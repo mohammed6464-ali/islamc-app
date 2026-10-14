@@ -1,15 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/l10n/app_copy.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/theme/app_colors.dart';
 
-class LocationPermissionScreen extends StatelessWidget {
+class LocationPermissionScreen extends StatefulWidget {
   const LocationPermissionScreen({super.key});
 
-  void _openHome(BuildContext context) {
+  @override
+  State<LocationPermissionScreen> createState() =>
+      _LocationPermissionScreenState();
+}
+
+class _LocationPermissionScreenState extends State<LocationPermissionScreen> {
+  bool _busy = false;
+
+  Future<void> _openHome() async {
+    await AppScope.read(context).completeOnboarding();
+    if (!mounted) {
+      return;
+    }
     Navigator.of(context).pushReplacementNamed(AppRoutes.shell);
+  }
+
+  Future<void> _allowLocation() async {
+    if (_busy) {
+      return;
+    }
+    setState(() => _busy = true);
+    final bool ok = await AppScope.read(context).requestCurrentLocation();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _busy = false);
+    if (ok) {
+      await _openHome();
+      return;
+    }
+    final copy = AppCopy(context.l10n);
+    final failure = AppScope.read(context).locationError;
+    final String message = failure != null
+        ? copy.locationFailure(failure)
+        : copy.l10n.locationFailed;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.primary,
+          content: Text(
+            message,
+            style: const TextStyle(
+              fontFamily: 'IBMPlexSansArabic',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      );
+  }
+
+  void _openManualCity() {
+    Navigator.of(context).pushNamed(
+      AppRoutes.currentLocation,
+      arguments: true,
+    );
   }
 
   @override
@@ -21,7 +78,7 @@ class LocationPermissionScreen extends StatelessWidget {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           child: LayoutBuilder(
             builder: (BuildContext context, BoxConstraints constraints) {
@@ -35,12 +92,12 @@ class LocationPermissionScreen extends StatelessWidget {
                       child: Column(
                         children: <Widget>[
                           const SizedBox(height: 18),
-                          _TopRow(onSkip: () => _openHome(context)),
+                          _TopRow(onSkip: _openHome),
                           const Spacer(flex: 52),
                           const _LocationIllustration(),
                           const SizedBox(height: 32),
-                          const Text(
-                            'حدد موقعك',
+                          Text(
+                            context.l10n.locationTitle,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 19,
@@ -52,9 +109,8 @@ class LocationPermissionScreen extends StatelessWidget {
                           const SizedBox(height: 14),
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxWidth: 312),
-                            child: const Text(
-                              'نستخدم موقعك لعرض مواقيت الصلاة والطقس واتجاه '
-                              'القبلة بدقة متناهية وفق توقيت مدينتك.',
+                            child: Text(
+                              context.l10n.locationBody,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 13.5,
@@ -69,27 +125,9 @@ class LocationPermissionScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                           const _PrivacyNote(),
                           const Spacer(flex: 48),
-                          _AllowButton(onPressed: () => _openHome(context)),
+                          _AllowButton(onPressed: _allowLocation, busy: _busy),
                           const SizedBox(height: 18),
-                          _ManualCityAction(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context)
-                                ..hideCurrentSnackBar()
-                                ..showSnackBar(
-                                  const SnackBar(
-                                    behavior: SnackBarBehavior.floating,
-                                    backgroundColor: AppColors.primary,
-                                    content: Text(
-                                      'سيتم إضافة اختيار المدينة لاحقًا',
-                                      style: TextStyle(
-                                        fontFamily: 'IBMPlexSansArabic',
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                            },
-                          ),
+                          _ManualCityAction(onPressed: _openManualCity),
                           const SizedBox(height: 46),
                         ],
                       ),
@@ -137,14 +175,14 @@ class _SkipButton extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onPressed,
-      child: const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Text(
-          'تخطي',
-          style: TextStyle(
+          context.l10n.skip,
+          style: const TextStyle(
             fontSize: 13.5,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF3B443E),
+            color: AppColors.textPrimary,
           ),
         ),
       ),
@@ -186,7 +224,7 @@ class _Dot extends StatelessWidget {
       width: 6,
       height: 6,
       decoration: const BoxDecoration(
-        color: Color(0xFFE2E3DE),
+        color: AppColors.border,
         shape: BoxShape.circle,
       ),
     );
@@ -276,13 +314,13 @@ class _AccuracyBadge extends StatelessWidget {
           ),
         ],
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(Icons.explore_outlined, size: 14, color: AppColors.primary),
-          SizedBox(width: 7),
+          const Icon(Icons.explore_outlined, size: 14, color: AppColors.primary),
+          const SizedBox(width: 7),
           Text(
-            'دقة متناهية',
+            context.l10n.highAccuracy,
             style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w600,
@@ -305,7 +343,7 @@ class _CityPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.pillGray,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE4E5E0)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -314,13 +352,13 @@ class _CityPill extends StatelessWidget {
           const SizedBox(width: 9),
           Flexible(
             child: Text(
-              AppScope.of(context).city.fullName,
+              AppCopy(context.l10n).cityFullName(AppScope.of(context).city),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF13261D),
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -335,14 +373,14 @@ class _PrivacyNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Icon(Icons.lock_outline_rounded, size: 13, color: AppColors.textMuted),
-        SizedBox(width: 7),
+        const Icon(Icons.lock_outline_rounded, size: 13, color: AppColors.textMuted),
+        const SizedBox(width: 7),
         Flexible(
           child: Text(
-            'بيانات موقعك محمية ومحفوظة على جهازك فقط',
+            context.l10n.locationPrivate,
             style: TextStyle(
               fontSize: 10.5,
               fontWeight: FontWeight.w400,
@@ -356,9 +394,10 @@ class _PrivacyNote extends StatelessWidget {
 }
 
 class _AllowButton extends StatelessWidget {
-  const _AllowButton({required this.onPressed});
+  const _AllowButton({required this.onPressed, required this.busy});
 
   final VoidCallback onPressed;
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
@@ -366,23 +405,39 @@ class _AllowButton extends StatelessWidget {
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: busy ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.primary,
+          disabledForegroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(17),
           ),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Icon(Icons.gps_fixed_rounded, size: 18),
-            SizedBox(width: 10),
-            Text(
-              'السماح بتحديد الموقع',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            if (busy)
+              const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            else
+              const Icon(Icons.gps_fixed_rounded, size: 18),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                context.l10n.allowLocation,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
             ),
           ],
         ),
@@ -404,14 +459,18 @@ class _ManualCityAction extends StatelessWidget {
         foregroundColor: AppColors.primary,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(Icons.search_rounded, size: 17),
-          SizedBox(width: 9),
-          Text(
-            'اختيار المدينة يدويًا',
-            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+          const Icon(Icons.search_rounded, size: 17),
+          const SizedBox(width: 9),
+          Flexible(
+            child: Text(
+              context.l10n.chooseCityManually,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+            ),
           ),
         ],
       ),

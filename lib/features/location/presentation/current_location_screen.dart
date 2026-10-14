@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 
 import '../../../core/data/demo_data.dart';
 import '../../../core/data/models.dart';
+import '../../../core/l10n/app_copy.dart';
+import '../../../core/l10n/app_language.dart';
+import '../../../core/navigation/app_routes.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/state/app_state.dart';
 import '../../../core/theme/app_colors.dart';
@@ -30,17 +33,23 @@ class _CurrentLocationScreenState extends State<CurrentLocationScreen> {
     super.dispose();
   }
 
-  List<CityData> get _matches {
+  List<CityData> _matches(AppCopy copy) {
     if (_query.trim().isEmpty) return DemoData.cities;
+    final String needle = _query.trim().toLowerCase();
     return DemoData.cities
-        .where((CityData c) => c.name.contains(_query.trim()))
+        .where((CityData city) {
+          return copy.cityName(city).toLowerCase().contains(needle) ||
+              city.name.toLowerCase().contains(needle) ||
+              city.nameEn.toLowerCase().contains(needle);
+        })
         .toList(growable: false);
   }
 
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
-    final List<CityData> matches = _matches;
+    final AppCopy copy = AppCopy(context.l10n);
+    final List<CityData> matches = _matches(copy);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -49,20 +58,20 @@ class _CurrentLocationScreenState extends State<CurrentLocationScreen> {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           bottom: false,
           child: Column(
             children: <Widget>[
               AppScreenHeader(
                 leading: const HeaderBackButton(),
-                title: 'موقعك الحالي',
-                subtitle: state.city.fullName,
+                title: context.l10n.yourCurrentLocation,
+                subtitle: copy.cityFullName(state.city),
                 titleColor: AppColors.textPrimary,
                 actions: <Widget>[
                   HeaderIconButton(
                     icon: Icons.explore_outlined,
-                    tooltip: 'اتجاه القبلة',
+                    tooltip: context.l10n.qiblaDirection,
                     onPressed: () => Navigator.of(context).maybePop(),
                   ),
                 ],
@@ -78,9 +87,9 @@ class _CurrentLocationScreenState extends State<CurrentLocationScreen> {
                     const SizedBox(height: 14),
                     const _CurrentCityCard(),
                     const SizedBox(height: 20),
-                    const SectionTitle(
-                      title: 'أو اختر مدينة يدويًا',
-                      trailing: 'المملكة العربية السعودية',
+                    SectionTitle(
+                      title: context.l10n.orChooseCity,
+                      trailing: context.l10n.countrySaudi,
                     ),
                     const SizedBox(height: 12),
                     _SearchField(
@@ -90,17 +99,19 @@ class _CurrentLocationScreenState extends State<CurrentLocationScreen> {
                     ),
                     const SizedBox(height: 16),
                     SectionTitle(
-                      title: 'المدن الشائعة والمقدسة',
+                      title: context.l10n.popularHolyCities,
                       titleColor: AppColors.textSecondary,
-                      trailing: '${DemoData.cities.length} مدن متوفرة',
+                      trailing: context.l10n.citiesAvailable(
+                        DemoData.cities.length,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     const _CityChips(),
                     const SizedBox(height: 18),
                     if (matches.isEmpty)
-                      const InfoNote(
+                      InfoNote(
                         icon: Icons.search_off_rounded,
-                        text: 'لا توجد مدينة مطابقة لبحثك.',
+                        text: context.l10n.noCityMatch,
                       )
                     else
                       for (final CityData city in matches) ...<Widget>[
@@ -110,11 +121,10 @@ class _CurrentLocationScreenState extends State<CurrentLocationScreen> {
                     const SizedBox(height: 6),
                     InfoNote(
                       icon: Icons.verified_outlined,
-                      title:
-                          'طريقة الحساب المعتمدة: ${state.calculationMethod}',
-                      text:
-                          'تتم مطابقة زوايا الفجر والعشاء واتجاه القبلة مع '
-                          'المعايير الرسمية لوزارة الشؤون الإسلامية.',
+                      title: context.l10n.officialMethod(
+                        copy.calcMethod(state.calculationMethodEnum),
+                      ),
+                      text: context.l10n.officialMethodBody,
                     ),
                   ],
                 ),
@@ -133,6 +143,11 @@ class _MapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final String gpsLabel = state.location.fromCache
+        ? context.l10n.lastKnownLocation
+        : (state.location.isAutomatic
+              ? context.l10n.gpsStrong
+              : context.l10n.manualLocation);
 
     return AppCard(
       radius: 20,
@@ -156,14 +171,14 @@ class _MapCard extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Dot(size: 7, color: AppColors.primary),
-                  SizedBox(width: 8),
+                  const Dot(size: 7, color: AppColors.primary),
+                  const SizedBox(width: 8),
                   Text(
-                    'إشارة GPS قوية دقيقة',
-                    style: TextStyle(
+                    gpsLabel,
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
@@ -182,10 +197,10 @@ class _MapCard extends StatelessWidget {
                 color: AppColors.textPrimary.withValues(alpha: 0.62),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Text(
-                '24.7136° N, 46.6753° E',
+              child: Text(
+                AppScope.of(context).coordinatesLabel,
                 textDirection: TextDirection.ltr,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                   color: AppColors.surface,
@@ -203,7 +218,7 @@ class _MapCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 onTap: () => showAppMessage(
                   context,
-                  'الخريطة تمثيلية فقط في النسخة التجريبية.',
+                  context.l10n.mapPlaceholder,
                 ),
                 child: const SizedBox(
                   width: 40,
@@ -229,6 +244,7 @@ class _CurrentCityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
 
     return AppCard(
       radius: 18,
@@ -245,7 +261,7 @@ class _CurrentCityCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      state.city.fullName,
+                      copy.cityFullName(state.city),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -255,7 +271,7 @@ class _CurrentCityCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${DemoData.timezoneName} • دقة التوقيت الفلكي 100%',
+                      '${state.city.timezoneId} • ${context.l10n.calcUmmAlQura}',
                       style: const TextStyle(
                         fontSize: 11.5,
                         color: AppColors.textSecondary,
@@ -266,23 +282,42 @@ class _CurrentCityCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              const AppBadge(
-                'نشط الآن',
+              AppBadge(
+                context.l10n.activeNow,
                 background: AppColors.mintStrong,
                 radius: 12,
-                padding: EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
               ),
             ],
           ),
           const SizedBox(height: 16),
           PrimaryButton(
-            label: 'تحديث الموقع عبر GPS',
+            label: context.l10n.refreshGps,
             icon: Icons.my_location_rounded,
-            onPressed: () => showAppMessage(
-              context,
-              'تحديد الموقع عبر GPS غير مفعّل — المدينة تُختار يدويًا في '
-              'النسخة التجريبية.',
-            ),
+            onPressed: () async {
+              final bool ok =
+                  await AppScope.read(context).requestCurrentLocation();
+              if (!context.mounted) {
+                return;
+              }
+              final AppCopy next = AppCopy(context.l10n);
+              if (ok) {
+                showAppMessage(
+                  context,
+                  context.l10n.locationUpdated(
+                    next.cityName(AppScope.read(context).city),
+                  ),
+                );
+                return;
+              }
+              final failure = AppScope.read(context).locationError;
+              showAppMessage(
+                context,
+                failure != null
+                    ? next.locationFailure(failure)
+                    : context.l10n.locationFailed,
+              );
+            },
           ),
           const SizedBox(height: 14),
           const CardDivider(),
@@ -295,23 +330,23 @@ class _CurrentCityCard extends StatelessWidget {
                 color: AppColors.textPrimary,
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'تحديد الموقع تلقائيًا',
-                      style: TextStyle(
+                      context.l10n.locationAuto,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                         height: 1.3,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
-                      'تحديث مواقيت الصلاة والأذان عند التنقل بين المدن',
-                      style: TextStyle(
+                      context.l10n.locationAutoSubtitle,
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.textSecondary,
                         height: 1.45,
@@ -323,7 +358,9 @@ class _CurrentCityCard extends StatelessWidget {
               const SizedBox(width: 10),
               AppToggle(
                 value: state.autoDetectLocation,
-                onChanged: state.setAutoDetectLocation,
+                onChanged: (bool value) {
+                  state.setAutoDetectLocation(value);
+                },
               ),
             ],
           ),
@@ -359,11 +396,11 @@ class _SearchField extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 isDense: true,
                 border: InputBorder.none,
-                hintText: 'ابحث عن مدينة...',
-                hintStyle: TextStyle(
+                hintText: context.l10n.searchCity,
+                hintStyle: const TextStyle(
                   fontSize: 13.5,
                   fontWeight: FontWeight.w400,
                   color: AppColors.textMuted,
@@ -410,6 +447,8 @@ class _CityChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.read(context);
+    final AppCopy copy = AppCopy(context.l10n);
+    final String name = copy.cityName(city);
 
     return Material(
       color: selected ? AppColors.primary : AppColors.surface,
@@ -440,7 +479,7 @@ class _CityChip extends StatelessWidget {
                 const SizedBox(width: 7),
               ],
               Text(
-                selected ? '${city.name} (محدد حاليًا)' : city.name,
+                selected ? context.l10n.currentlySelected(name) : name,
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
@@ -463,17 +502,21 @@ class _CityRowCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
     final bool selected = city.id == state.cityId;
-    final int offsetDelta = city.offsetMinutes - state.city.offsetMinutes;
-    final PrayerTime asr = _asrFor(city);
+    final PrayerTime asr = state.asrForCity(city);
+    final PrayerTime currentAsr = state.asrForCity(state.city);
+    final int offsetDelta = asr.minutes - currentAsr.minutes;
 
     final StringBuffer subtitle = StringBuffer()
       ..write(city.region)
-      ..write(' • صلاة العصر ')
-      ..write(asr.paddedTimeWithPeriod);
+      ..write(' • ')
+      ..write(copy.prayerLongName('asr'))
+      ..write(' ')
+      ..write(copy.timeWithPeriod(asr));
     if (!selected && offsetDelta != 0) {
       subtitle.write(
-        ' (فارق ${offsetDelta > 0 ? '+' : '-'}${offsetDelta.abs()} دقيقة)',
+        ' ${context.l10n.minuteOffset('${offsetDelta > 0 ? '+' : ''}$offsetDelta')}',
       );
     }
 
@@ -506,7 +549,7 @@ class _CityRowCard extends StatelessWidget {
                       children: <Widget>[
                         Flexible(
                           child: Text(
-                            city.name,
+                            copy.cityName(city),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -519,8 +562,8 @@ class _CityRowCard extends StatelessWidget {
                         ),
                         if (selected) ...<Widget>[
                           const SizedBox(width: 8),
-                          const AppBadge(
-                            'المدينة الحالية',
+                          AppBadge(
+                            context.l10n.currentCity,
                             background: AppColors.primary,
                             foreground: AppColors.surface,
                             fontSize: 9.5,
@@ -570,27 +613,24 @@ class _CityRowCard extends StatelessWidget {
 
   static IconData _cityIcon(CityData city) =>
       city.holy ? Icons.mosque_outlined : Icons.apartment_rounded;
-
-  /// Asr for an arbitrary city, independent of the currently selected one.
-  static PrayerTime _asrFor(CityData city) {
-    final PrayerTemplate template = DemoData.prayerTemplates.firstWhere(
-      (PrayerTemplate t) => t.id == 'asr',
-    );
-    return PrayerTime(
-      id: template.id,
-      name: template.name,
-      longName: template.longName,
-      note: template.upcomingNote,
-      icon: template.icon,
-      minutes: template.baseMinutes + city.offsetMinutes,
-      status: PrayerStatus.upcoming,
-      supportsAlert: true,
-    );
-  }
 }
 
 void _select(BuildContext context, AppState state, CityData city) {
-  if (city.id == state.cityId) return;
+  if (city.id == state.cityId && !state.location.isAutomatic) {
+    return;
+  }
   state.selectCity(city.id);
-  showAppMessage(context, 'تم تحديث المواقيت والطقس على مدينة ${city.name}.');
+  final bool fromOnboarding =
+      ModalRoute.of(context)?.settings.arguments == true;
+  if (fromOnboarding) {
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.shell,
+      (Route<dynamic> route) => false,
+    );
+    return;
+  }
+  showAppMessage(
+    context,
+    context.l10n.timesUpdatedForCity(AppCopy(context.l10n).cityName(city)),
+  );
 }

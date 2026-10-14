@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/data/demo_data.dart';
 import '../../../core/data/hijri_date.dart';
 import '../../../core/data/models.dart';
+import '../../../core/l10n/app_copy.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/navigation/app_routes.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/state/app_state.dart';
@@ -19,18 +20,19 @@ class CalendarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
 
     return Column(
       children: <Widget>[
         SafeArea(
           bottom: false,
           child: AppScreenHeader(
-            leading: _CityLeading(city: state.city.fullName),
-            title: 'التقويم',
+            leading: _CityLeading(city: copy.cityFullName(state.city)),
+            title: context.l10n.calendar,
             actions: <Widget>[
               HeaderIconButton(
                 icon: Icons.explore_outlined,
-                tooltip: 'اتجاه القبلة',
+                tooltip: context.l10n.qiblaDirection,
                 onPressed: () =>
                     Navigator.of(context).pushNamed(AppRoutes.qibla),
               ),
@@ -49,12 +51,14 @@ class CalendarScreen extends StatelessWidget {
               const _SelectedDayCard(),
               const SizedBox(height: 20),
               SectionTitle(
-                title: 'المناسبات القادمة',
+                title: context.l10n.upcomingEvents,
                 titleColor: AppColors.primary,
-                trailing: _eventsRange(),
+                trailing: state.upcomingEvents.isEmpty
+                    ? ''
+                    : _eventsRange(state, copy),
               ),
               const SizedBox(height: 12),
-              for (final IslamicEvent event in DemoData.events) ...<Widget>[
+              for (final IslamicEvent event in state.upcomingEvents) ...<Widget>[
                 EventListCard(event: event),
                 const SizedBox(height: 12),
               ],
@@ -65,17 +69,20 @@ class CalendarScreen extends StatelessWidget {
     );
   }
 
-  static String _eventsRange() {
+  String _eventsRange(AppState state, AppCopy copy) {
     final List<HijriDate> dates =
-        DemoData.events
+        state.upcomingEvents
             .map((IslamicEvent e) => HijriDate.fromGregorian(e.date))
             .toList()
           ..sort(
             (HijriDate a, HijriDate b) =>
                 (a.year * 12 + a.month).compareTo(b.year * 12 + b.month),
           );
+    if (dates.isEmpty) {
+      return '';
+    }
     final Set<String> names = <String>{
-      for (final HijriDate d in dates) d.monthName,
+      for (final HijriDate d in dates) copy.hijriMonth(d.month),
     };
     return '${names.join(' - ')} ${dates.last.year}';
   }
@@ -93,7 +100,7 @@ class _CityLeading extends StatelessWidget {
       children: <Widget>[
         HeaderIconButton(
           icon: Icons.location_on_outlined,
-          tooltip: 'تغيير المدينة',
+          tooltip: context.l10n.changeCity,
           onPressed: () =>
               Navigator.of(context).pushNamed(AppRoutes.currentLocation),
         ),
@@ -123,8 +130,12 @@ class _SelectedDayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
     final DateTime date = state.selectedDate;
-    final bool isToday = date == DemoData.today;
+    final bool isToday =
+        date.year == state.today.year &&
+        date.month == state.today.month &&
+        date.day == state.today.day;
     final HijriDate hijri = HijriDate.fromGregorian(date);
     final PrayerTime next = state.nextPrayer;
 
@@ -141,13 +152,13 @@ class _SelectedDayCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 AppBadge(
-                  isToday ? 'اليوم الحالي' : 'يوم محدد',
+                  isToday ? context.l10n.currentDay : context.l10n.selectedDay,
                   background: AppColors.mintStrong,
                 ),
                 const SizedBox(height: 7),
                 Text(
-                  '${GregorianLabels.weekdayName(date)} ${hijri.formatted} — '
-                  '${GregorianLabels.formatted(date)}',
+                  '${copy.weekday(date.weekday)} ${copy.hijriDate(hijri)} — '
+                  '${copy.gregorianDate(date)}',
                   style: const TextStyle(
                     fontSize: 14.5,
                     fontWeight: FontWeight.w700,
@@ -157,8 +168,8 @@ class _SelectedDayCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${state.city.name} • ${DemoData.timezoneName} • '
-                  '${next.longName} القادمة في ${next.timeWithPeriod}',
+                  '${context.l10n.prayerSource(copy.cityName(state.city))} • '
+                  '${context.l10n.nextPrayerAt(copy.prayerLongName(next.id), copy.timeWithPeriod(next))}',
                   style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w400,

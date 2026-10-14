@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:islmac_app/core/location/fake_location_provider.dart';
+import 'package:islmac_app/core/location/location_failure.dart';
+import 'package:islmac_app/core/persistence/settings_store.dart';
 import 'package:islmac_app/core/state/app_state.dart';
+import 'package:islmac_app/core/time/app_clock.dart';
+import 'package:islmac_app/core/time/app_timezone.dart';
 import 'package:islmac_app/features/home/presentation/widgets/next_prayer_card.dart';
 import 'package:islmac_app/main.dart';
 
@@ -31,8 +36,17 @@ Future<void> _runSplash(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Future<AppState> _pumpApp(WidgetTester tester) async {
-  final AppState state = AppState();
+Future<AppState> _pumpApp(
+  WidgetTester tester, {
+  FakeLocationProvider? location,
+  SettingsStore? store,
+}) async {
+  AppTimezone.ensureInitialized();
+  final AppState state = AppState(
+    clock: FakeClock(DateTime.utc(2026, 9, 7, 7, 27, 24)),
+    locationProvider: location ?? FakeLocationProvider(),
+    store: store ?? MemorySettingsStore(),
+  );
   await tester.pumpWidget(MawaqeetnaApp(state: state));
   return state;
 }
@@ -62,20 +76,20 @@ void main() {
     _useScreenSize(tester, const Size(390, 844));
     await _pumpApp(tester);
 
-    expect(find.text('مواقيتنا'), findsOneWidget);
+    expect(find.text('تقويم ومواقيت'), findsOneWidget);
     expect(find.text('معك في كل وقت'), findsOneWidget);
 
     await _runSplash(tester);
 
     // Reached automatically, and the splash route is gone for good.
-    expect(find.text('مواقيتنا'), findsNothing);
+    expect(find.text('تقويم ومواقيت'), findsNothing);
     expect(find.text('حدد موقعك'), findsOneWidget);
 
     await tester.tap(find.text('السماح بتحديد الموقع'));
     await tester.pumpAndSettle();
 
     expect(find.text('حدد موقعك'), findsNothing);
-    expect(find.text('السلام عليكم ورحمة الله'), findsOneWidget);
+    expect(find.text('تقويمك .. مواقيتك .. في مكان واحد'), findsOneWidget);
     expect(find.text('صلاة الظهر'), findsOneWidget);
     expect(find.text('مواقيت صلاة اليوم'), findsOneWidget);
 
@@ -105,7 +119,7 @@ void main() {
 
     await tester.tap(find.text('الرئيسية').last);
     await tester.pumpAndSettle();
-    expect(find.text('السلام عليكم ورحمة الله'), findsOneWidget);
+    expect(find.text('تقويمك .. مواقيتك .. في مكان واحد'), findsOneWidget);
   });
 
   testWidgets('home opens the prayer times screen and its alert settings', (
@@ -145,30 +159,45 @@ void main() {
     final AppState state = await _openShell(tester);
 
     expect(state.city.name, 'الرياض');
-    expect(state.prayerById('asr').timeWithPeriod, '3:22 م');
+    final String riyadhAsr = state.prayerById('asr').timeWithPeriod;
 
     state.selectCity('makkah');
     await tester.pumpAndSettle();
 
-    expect(state.prayerById('asr').timeWithPeriod, '3:45 م');
+    expect(state.prayerById('asr').timeWithPeriod, isNot(riyadhAsr));
     expect(find.text('مكة المكرمة، المملكة العربية السعودية'), findsWidgets);
 
     await tester.tap(find.text('الطقس').last);
     await tester.pumpAndSettle();
-    expect(find.text('صحو وحار • مكة المكرمة'), findsOneWidget);
+    expect(find.textContaining('مكة المكرمة'), findsWidgets);
   });
 
-  testWidgets('qibla screen renders the fixed demo bearing', (
+  testWidgets('denying location permission keeps the user on the picker', (
     WidgetTester tester,
   ) async {
     _useScreenSize(tester, const Size(390, 844));
-    await _openShell(tester);
+    await _pumpApp(
+      tester,
+      location: FakeLocationProvider(permission: AppPermissionStatus.denied),
+    );
+    await _runSplash(tester);
+    await tester.tap(find.text('السماح بتحديد الموقع'));
+    await tester.pumpAndSettle();
+    expect(find.text('حدد موقعك'), findsOneWidget);
+    expect(find.textContaining('يمكنك اختيار المدينة يدويًا'), findsWidgets);
+  });
+
+  testWidgets('qibla screen renders the computed bearing', (
+    WidgetTester tester,
+  ) async {
+    _useScreenSize(tester, const Size(390, 844));
+    final AppState state = await _openShell(tester);
 
     await tester.tap(find.text('اتجاه القبلة').first);
     await tester.pumpAndSettle();
 
-    expect(find.text('244° جنوب غرب'), findsOneWidget);
-    expect(find.text('دقة البوصلة: ممتازة'), findsOneWidget);
+    expect(find.text(state.city.qiblaLabel), findsOneWidget);
+    expect(find.textContaining('دقة البوصلة:'), findsOneWidget);
   });
 
   for (final Size size in <Size>[

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/data/demo_data.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/navigation/app_routes.dart';
 import '../../../../core/navigation/main_shell.dart';
+import '../../../../core/state/app_scope.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_card.dart';
 
@@ -13,32 +14,39 @@ class QuickActionsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<QuickActionCard> actions = <QuickActionCard>[
       QuickActionCard(
-        label: 'اتجاه القبلة',
+        label: context.l10n.qiblaDirection,
         icon: Icons.explore_outlined,
         circleColor: AppColors.mint,
         iconColor: AppColors.primary,
         onTap: () => Navigator.of(context).pushNamed(AppRoutes.qibla),
       ),
       QuickActionCard(
-        label: 'التقويم',
+        label: context.l10n.calendar,
         icon: Icons.calendar_month_outlined,
         circleColor: AppColors.iconCircleGray,
         onTap: () => MainShell.goToTab(context, 2),
       ),
       QuickActionCard(
-        label: 'الطقس',
+        label: context.l10n.weather,
         icon: Icons.wb_sunny_outlined,
         circleColor: AppColors.iconCircleNeutral,
         onTap: () => MainShell.goToTab(context, 1),
       ),
       QuickActionCard(
-        label: 'المناسبات',
+        label: context.l10n.occasions,
         icon: Icons.flag_outlined,
         circleColor: AppColors.amberIcon,
-        onTap: () => Navigator.of(context).pushNamed(
-          AppRoutes.eventDetails,
-          arguments: DemoData.featuredEvent.id,
-        ),
+        onTap: () {
+          final String? id = AppScope.of(context).featuredEvent?.id;
+          if (id == null) {
+            MainShell.goToTab(context, 2);
+            return;
+          }
+          Navigator.of(context).pushNamed(
+            AppRoutes.eventDetails,
+            arguments: id,
+          );
+        },
       ),
     ];
 

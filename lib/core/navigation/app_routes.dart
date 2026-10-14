@@ -10,6 +10,12 @@ import '../../features/settings/presentation/prayer_notifications_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import 'main_shell.dart';
 
+class AppNavigator {
+  const AppNavigator._();
+
+  static final GlobalKey<NavigatorState> key = GlobalKey<NavigatorState>();
+}
+
 class AppRoutes {
   const AppRoutes._();
 

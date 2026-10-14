@@ -39,7 +39,7 @@ class AppToggle extends StatelessWidget {
             height: _height,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: on ? AppColors.primaryDark : AppColors.toggleOff,
+              color: on ? AppColors.accentGreen : AppColors.toggleOff,
               borderRadius: BorderRadius.circular(_height / 2),
             ),
             child: AnimatedAlign(
@@ -78,9 +78,9 @@ class AppRadio extends StatelessWidget {
       height: 22,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: selected ? AppColors.primaryDark : Colors.transparent,
+        color: selected ? AppColors.accentGreen : Colors.transparent,
         border: Border.all(
-          color: selected ? AppColors.primaryDark : const Color(0xFFCBD2CD),
+          color: selected ? AppColors.accentGreen : AppColors.border,
           width: 2,
         ),
       ),

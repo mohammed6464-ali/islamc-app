@@ -1,0 +1,3 @@
+NSLocationWhenInUseUsageDescription = "نستخدم موقعك أثناء استخدام التطبيق لحساب مواقيت الصلاة حسب مدينتك.";
+NSCalendarsUsageDescription = "نضيف المناسبة إلى تقويم هاتفك عند طلبك ذلك.";
+NSCalendarsFullAccessUsageDescription = "نضيف المناسبة إلى تقويم هاتفك عند طلبك ذلك.";

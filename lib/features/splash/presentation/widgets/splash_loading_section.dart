@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/app_info.dart';
+import '../../../../core/l10n/app_language.dart';
+import '../../../../core/legal/app_legal.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Progress bar plus the three stacked status lines at the bottom of the
@@ -23,7 +26,7 @@ class SplashLoadingSection extends StatelessWidget {
               child: Stack(
                 children: <Widget>[
                   const ColoredBox(
-                    color: Color(0xFF1B3931),
+                    color: AppColors.darkGreen,
                     child: SizedBox.expand(),
                   ),
                   AnimatedBuilder(
@@ -39,8 +42,8 @@ class SplashLoadingSection extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: <Color>[
-                            Color(0xFF6FD3AC),
-                            Color(0xFF9BF0CB),
+                            AppColors.lightMint,
+                            AppColors.mintSoft,
                           ],
                         ),
                       ),
@@ -54,7 +57,7 @@ class SplashLoadingSection extends StatelessWidget {
         ),
         const SizedBox(height: 26),
         Text(
-          'جاري ضبط المواقيت حسب إحداثيات موقعك...',
+          context.l10n.splashLoadingTimes,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 12.5,
@@ -63,8 +66,8 @@ class SplashLoadingSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 22),
-        const Text(
-          'بيانات فلكية موثقة وفق تقويم أم القرى',
+        Text(
+          context.l10n.splashAstronomical,
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 12,
@@ -74,7 +77,7 @@ class SplashLoadingSection extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         Text(
-          'الإصدار 1.0.0',
+          context.l10n.appVersionLabel(AppLegal.appName, AppInfo.version),
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 11,

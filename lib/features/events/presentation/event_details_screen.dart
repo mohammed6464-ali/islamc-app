@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
-import '../../../core/data/demo_data.dart';
 import '../../../core/data/hijri_date.dart';
 import '../../../core/data/models.dart';
+import '../../../core/events/device_calendar_service.dart';
+import '../../../core/l10n/app_copy.dart';
+import '../../../core/l10n/app_language.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/state/app_state.dart';
 import '../../../core/theme/app_colors.dart';
@@ -22,7 +25,8 @@ class EventDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
-    final IslamicEvent event = DemoData.eventById(eventId);
+    final AppCopy copy = AppCopy(context.l10n);
+    final IslamicEvent event = state.eventById(eventId);
     final bool favorite = state.isFavoriteEvent(event.id);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -32,7 +36,7 @@ class EventDetailsScreen extends StatelessWidget {
         systemNavigationBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           bottom: false,
           child: Column(
@@ -40,18 +44,15 @@ class EventDetailsScreen extends StatelessWidget {
               AppScreenHeader(
                 showDivider: false,
                 leading: const HeaderBackButton(boxed: true),
-                title: 'تفاصيل المناسبة',
+                title: context.l10n.eventDetails,
                 titleColor: AppColors.textPrimary,
                 titleSize: 15,
                 actions: <Widget>[
                   HeaderIconButton(
                     icon: Icons.share_outlined,
-                    tooltip: 'مشاركة المناسبة',
+                    tooltip: context.l10n.shareOccasion,
                     boxed: true,
-                    onPressed: () => showAppMessage(
-                      context,
-                      'المشاركة غير مفعّلة في النسخة التجريبية.',
-                    ),
+                    onPressed: () => _shareEvent(context, event),
                   ),
                 ],
               ),
@@ -74,8 +75,8 @@ class EventDetailsScreen extends StatelessWidget {
                     const SizedBox(height: 18),
                     PrimaryButton(
                       label: favorite
-                          ? 'محفوظة في مناسباتي المفضلة'
-                          : 'حفظ في مناسباتي المفضلة',
+                          ? context.l10n.savedInFavorites
+                          : context.l10n.saveToFavorites,
                       icon: favorite
                           ? Icons.bookmark_rounded
                           : Icons.bookmark_add_outlined,
@@ -84,8 +85,10 @@ class EventDetailsScreen extends StatelessWidget {
                         showAppMessage(
                           context,
                           added
-                              ? 'تمت إضافة «${event.title}» إلى مناسباتك المفضلة.'
-                              : 'تمت إزالة «${event.title}» من مناسباتك المفضلة.',
+                              ? context.l10n.favoriteAdded(copy.eventTitle(event))
+                              : context.l10n.favoriteRemoved(
+                                  copy.eventTitle(event),
+                                ),
                         );
                       },
                     ),
@@ -107,6 +110,9 @@ class _EventHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppCopy copy = AppCopy(context.l10n);
+    final List<String> pills = copy.eventPills(event);
+
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -161,7 +167,7 @@ class _EventHero extends StatelessWidget {
                         ),
                         const SizedBox(width: 7),
                         Text(
-                          event.ownerBadge,
+                          copy.eventOwner(event),
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w600,
@@ -173,7 +179,7 @@ class _EventHero extends StatelessWidget {
                   ),
                   const SizedBox(height: 22),
                   Text(
-                    event.title,
+                    copy.eventTitle(event),
                     style: const TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.w700,
@@ -183,7 +189,7 @@ class _EventHero extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    event.tagline,
+                    copy.eventTagline(event),
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
@@ -198,11 +204,11 @@ class _EventHero extends StatelessWidget {
                     children: <Widget>[
                       _HeroPill(
                         icon: Icons.verified_outlined,
-                        label: event.statusPills.first,
+                        label: pills.isEmpty ? '' : pills.first,
                       ),
                       _HeroPill(
                         icon: Icons.event_available_outlined,
-                        label: event.statusPills.last,
+                        label: pills.length < 2 ? '' : pills.last,
                         filled: true,
                       ),
                     ],
@@ -269,8 +275,9 @@ class _CountdownCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int days = DemoData.daysUntil(event.date);
+    final int days = AppScope.of(context).daysUntil(event.date);
     final bool upcoming = days > 0;
+    final AppCopy copy = AppCopy(context.l10n);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -287,9 +294,9 @@ class _CountdownCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Text(
-                  'الوقت المتبقي حتى الانطلاق',
-                  style: TextStyle(
+                Text(
+                  context.l10n.timeUntilStart,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
                     color: AppColors.textSecondary,
@@ -297,7 +304,7 @@ class _CountdownCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  upcoming ? 'متبقي $days يومًا' : 'حلّت المناسبة اليوم',
+                  copy.remainingDays(days),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -316,16 +323,16 @@ class _CountdownCard extends StatelessWidget {
             ),
             child: Column(
               children: <Widget>[
-                const Text(
-                  'الحالة',
-                  style: TextStyle(
+                Text(
+                  context.l10n.status,
+                  style: const TextStyle(
                     fontSize: 10,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  upcoming ? 'قادمة' : 'اليوم',
+                  upcoming ? context.l10n.upcoming : context.l10n.statusToday,
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -348,6 +355,7 @@ class _EventDateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppCopy copy = AppCopy(context.l10n);
     final HijriDate hijri = HijriDate.fromGregorian(event.date);
 
     return AppCard(
@@ -360,16 +368,16 @@ class _EventDateCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Text(
-                  'تاريخ المناسبة',
-                  style: TextStyle(
+                Text(
+                  context.l10n.eventDate,
+                  style: const TextStyle(
                     fontSize: 11,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  GregorianLabels.withWeekday(event.date),
+                  copy.weekdayDate(event.date),
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
@@ -379,7 +387,7 @@ class _EventDateCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '(${hijri.formatted})',
+                  '(${copy.hijriDate(hijri)})',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -402,19 +410,21 @@ class _AboutCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppCopy copy = AppCopy(context.l10n);
+
     return AppCard(
       radius: 18,
       padding: const EdgeInsets.fromLTRB(15, 15, 15, 15),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const SectionTitle(
-            title: 'عن المناسبة',
+          SectionTitle(
+            title: context.l10n.aboutOccasion,
             icon: Icons.article_outlined,
           ),
           const SizedBox(height: 12),
           Text(
-            event.description,
+            copy.eventDescription(event),
             textAlign: TextAlign.justify,
             style: const TextStyle(
               fontSize: 13,
@@ -424,7 +434,16 @@ class _AboutCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          InfoNote(icon: event.icon, text: event.highlight),
+          InfoNote(icon: event.icon, text: copy.eventHighlight(event)),
+          const SizedBox(height: 8),
+          Text(
+            copy.eventDateSource(event),
+            style: const TextStyle(
+              fontSize: 11.5,
+              height: 1.45,
+              color: AppColors.textSecondary,
+            ),
+          ),
         ],
       ),
     );
@@ -439,6 +458,7 @@ class _QuickActionsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
 
     return AppCard(
       radius: 18,
@@ -446,27 +466,37 @@ class _QuickActionsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             child: SectionTitle(
-              title: 'الإجراءات السريعة',
+              title: context.l10n.quickActions,
               icon: Icons.bolt_rounded,
             ),
           ),
           const SizedBox(height: 12),
           _ActionRow(
             icon: Icons.calendar_today_outlined,
-            label: 'إضافة إلى تقويم الهاتف',
-            onTap: () => showAppMessage(
-              context,
-              'إضافة المناسبة لتقويم الهاتف غير مفعّلة في النسخة التجريبية.',
-            ),
+            label: context.l10n.addToDeviceCalendar,
+            onTap: () async {
+              final bool ok = await const DeviceCalendarService().addAllDayEvent(
+                title: copy.eventTitle(event),
+                date: event.date,
+                notes: copy.eventDescription(event),
+              );
+              if (!context.mounted) {
+                return;
+              }
+              showAppMessage(
+                context,
+                ok ? context.l10n.calendarOpened : context.l10n.calendarFailed,
+              );
+            },
           ),
           const SizedBox(height: 10),
           _ActionRow(
             icon: Icons.notifications_active_outlined,
-            label: 'تفعيل التنبيه المسبق',
-            subtitle: 'قبل 3 أيام من المناسبة',
+            label: context.l10n.enableAdvanceAlert,
+            subtitle: context.l10n.threeDaysBefore,
             trailing: AppToggle(
               value: state.eventPreAlert(event.id),
               onChanged: (bool value) =>
@@ -476,11 +506,8 @@ class _QuickActionsCard extends StatelessWidget {
           const SizedBox(height: 10),
           _ActionRow(
             icon: Icons.share_outlined,
-            label: 'مشاركة المناسبة',
-            onTap: () => showAppMessage(
-              context,
-              'المشاركة غير مفعّلة في النسخة التجريبية.',
-            ),
+            label: context.l10n.shareOccasion,
+            onTap: () => _shareEvent(context, event),
           ),
         ],
       ),
@@ -562,4 +589,17 @@ class _ActionRow extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _shareEvent(BuildContext context, IslamicEvent event) {
+  final AppCopy copy = AppCopy(context.l10n);
+  return SharePlus.instance.share(
+    ShareParams(
+      text: context.l10n.shareEventText(
+        copy.eventTitle(event),
+        copy.weekdayDate(event.date),
+        copy.eventTagline(event),
+      ),
+    ),
+  );
 }

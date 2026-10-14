@@ -1,50 +1,58 @@
 import 'package:flutter/material.dart';
 
-/// Palette sampled directly from the three reference designs.
+/// Official client palette and supporting neutrals.
+///
+/// Brand HEX values are exact and must not be approximated:
+/// primary `#114234`, darkGreen `#0C3D2E`, accentGreen `#086348`,
+/// lightMint `#D1E7DF`.
 class AppColors {
   const AppColors._();
 
-  // Brand greens
-  static const Color primary = Color(0xFF085E45);
-  static const Color primaryDark = Color(0xFF064B38);
-  static const Color primaryLight = Color(0xFF0B634A);
-  static const Color accentGreen = Color(0xFF1C7A5A);
+  // Official brand
+  static const Color primary = Color(0xFF114234);
+  static const Color darkGreen = Color(0xFF0C3D2E);
+  static const Color accentGreen = Color(0xFF086348);
+  static const Color lightMint = Color(0xFFD1E7DF);
 
-  // Splash gradient stops (top -> bottom)
+  /// Alias kept so existing widgets keep compiling.
+  static const Color primaryDark = darkGreen;
+  static const Color primaryLight = accentGreen;
+
+  // Splash gradient (top → bottom) built from the official greens.
   static const List<Color> splashGradient = <Color>[
-    Color(0xFF115540),
-    Color(0xFF105139),
-    Color(0xFF0C4B36),
-    Color(0xFF074432),
-    Color(0xFF043428),
-    Color(0xFF03241D),
-    Color(0xFF02201A),
+    primary,
+    Color(0xFF0E3B2F),
+    darkGreen,
+    Color(0xFF0A3226),
+    Color(0xFF07261D),
+    Color(0xFF051C16),
+    Color(0xFF03140F),
   ];
   static const List<double> splashGradientStops = <double>[
     0.0,
-    0.10,
-    0.30,
-    0.50,
+    0.12,
+    0.28,
+    0.48,
     0.68,
-    0.88,
+    0.86,
     1.0,
   ];
 
-  // Mints
-  static const Color mint = Color(0xFFD8F8EB);
-  static const Color mintBorder = Color(0xFFA9DEC6);
-  static const Color mintStrong = Color(0xFF98F0CD);
-  static const Color mintSoft = Color(0xFFE9F8F0);
-  static const Color mintMid = Color(0xFFD2F2E2);
-  static const Color mintText = Color(0xFF9CC6B6);
+  // Mints derived from light mint + accent, without replacing the brand HEX.
+  static const Color mint = lightMint;
+  static const Color mintBorder = Color(0xFFB4D6CA);
+  static const Color mintStrong = lightMint;
+  static const Color mintSoft = Color(0xFFE8F3EE);
+  static const Color mintMid = lightMint;
+  static const Color mintText = Color(0xFF5E8A7A);
 
-  // Neutrals
-  static const Color background = Color(0xFFF9FAF5);
+  // Neutrals — kept off-white/gray for readability. Not forced to green.
+  static const Color background = Color(0xFFF7FAF8);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFEDEFE8);
-  static const Color divider = Color(0xFFE8EAE3);
-  static const Color pillGray = Color(0xFFEEEFEA);
-  static const Color iconCircleGray = Color(0xFFE9EDE6);
+  static const Color border = Color(0xFFE4EDE8);
+  static const Color divider = Color(0xFFE0EAE5);
+  static const Color pillGray = Color(0xFFEEF3F0);
+  static const Color iconCircleGray = Color(0xFFE7EEEA);
   static const Color iconCircleNeutral = Color(0xFFEDEDEA);
 
   // Text
@@ -63,22 +71,23 @@ class AppColors {
   static const Color amberPill = Color(0xFFFAE7C0);
   static const Color amberText = Color(0xFF6B5526);
 
-  // Notification dot
   static const Color notificationDot = Color(0xFFE02B2B);
-
-  // Switches
   static const Color toggleOff = Color(0xFFDEE4E0);
 
-  // Hero gradients used by the event / prayer detail cards
-  static const Color heroGreenStart = Color(0xFF22573B);
-  static const Color heroGreenEnd = Color(0xFF014432);
+  static const Color heroGreenStart = accentGreen;
+  static const Color heroGreenEnd = darkGreen;
 
-  // Metric progress bars
   static const Color progressTrack = Color(0xFFE8E8E6);
   static const Color progressAmber = Color(0xFFE3B968);
   static const Color progressOrange = Color(0xFFD5802C);
 
-  // Weather illustration
   static const Color sunOrange = Color(0xFFF2A93B);
-  static const Color mintTint = Color(0xFFF1FDF9);
+  static const Color mintTint = Color(0xFFF3F9F6);
+
+  // Dark-mode surfaces (not a second brand palette).
+  static const Color darkBackground = Color(0xFF101614);
+  static const Color darkSurface = Color(0xFF1A2420);
+  static const Color darkBorder = Color(0xFF2C3A34);
+  static const Color darkTextPrimary = Color(0xFFF3F7F5);
+  static const Color darkTextSecondary = Color(0xFFB5C4BE);
 }

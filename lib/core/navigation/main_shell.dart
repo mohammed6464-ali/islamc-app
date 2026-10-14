@@ -5,7 +5,7 @@ import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/weather/presentation/weather_screen.dart';
-import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 import '../widgets/custom_bottom_navigation.dart';
 import 'app_routes.dart';
 
@@ -40,13 +40,9 @@ class MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.dark.copyWith(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: AppColors.surface,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
+      value: AppOverlays.of(context),
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: IndexedStack(
           index: _index,
           children: const <Widget>[

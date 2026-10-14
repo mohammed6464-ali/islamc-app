@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/data/demo_data.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
+import '../../../../core/state/app_scope.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// The two outlined pills pinned to the top of the splash screen:
@@ -39,7 +41,7 @@ class _LocationPill extends StatelessWidget {
           const SizedBox(width: 7),
           Flexible(
             child: Text(
-              DemoData.splashLocation,
+              _locationLabel(context),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
@@ -53,6 +55,27 @@ class _LocationPill extends StatelessWidget {
       ),
     );
   }
+}
+
+String _locationLabel(BuildContext context) {
+  final copy = AppCopy(context.l10n);
+  final state = AppScope.of(context);
+  final city = copy.cityNameFromId(
+    state.location.catalogId,
+    state.location.cityName,
+  );
+  return '${copy.l10n.countrySaudi} • $city';
+}
+
+String _toEasternDigits(String value) {
+  const String western = '0123456789';
+  const String eastern = '٠١٢٣٤٥٦٧٨٩';
+  return String.fromCharCodes(
+    value.codeUnits.map((int unit) {
+      final int index = western.codeUnits.indexOf(unit);
+      return index >= 0 ? eastern.codeUnitAt(index) : unit;
+    }),
+  );
 }
 
 class _HijriPill extends StatelessWidget {
@@ -81,9 +104,13 @@ class _HijriPill extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 7),
-              const Text(
-                DemoData.hijriYear,
-                style: TextStyle(
+              Text(
+                AppLanguage.isEnglish(AppScope.of(context).languageCode)
+                    ? '${AppScope.of(context).hijriToday.year}'
+                    : _toEasternDigits(
+                        '${AppScope.of(context).hijriToday.year}',
+                      ),
+                style: const TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   color: AppColors.goldText,
@@ -93,8 +120,8 @@ class _HijriPill extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        const Text(
-          'هـ',
+        Text(
+          AppLanguage.isEnglish(AppScope.of(context).languageCode) ? 'AH' : 'هـ',
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/data/models.dart';
+import '../../../../core/l10n/app_copy.dart';
+import '../../../../core/l10n/app_language.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -14,6 +16,7 @@ class WeatherHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState state = AppScope.of(context);
+    final AppCopy copy = AppCopy(context.l10n);
     final WeatherData weather = state.weather;
     final PrayerTime next = state.nextPrayer;
 
@@ -55,7 +58,7 @@ class WeatherHeroCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Text(
-                  state.temperatureUnitName,
+                  state.temperatureUnitNameFor(copy),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -67,7 +70,7 @@ class WeatherHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '${weather.condition} • ${state.city.name}',
+            '${copy.weatherCondition(weather.weatherCode, isDay: weather.isDay)} • ${copy.cityName(state.city)}',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 17,
@@ -87,10 +90,16 @@ class WeatherHeroCard extends StatelessWidget {
           const SizedBox(height: 14),
           _FooterLine(
             icon: Icons.mosque_outlined,
-            text: 'أذان ${next.name} القادم: ${next.paddedTimeWithPeriod}',
+            text: context.l10n.nextAdhanAt(
+              copy.prayerName(next.id),
+              copy.timeWithPeriod(next),
+            ),
           ),
           const SizedBox(height: 9),
-          _FooterLine(icon: Icons.air_rounded, text: weather.outdoorNote),
+          _FooterLine(
+            icon: Icons.air_rounded,
+            text: copy.weatherNote(weather.weatherCode),
+          ),
         ],
       ),
     );
@@ -120,7 +129,7 @@ class _HighLowPill extends StatelessWidget {
             color: Color(0xFFC0392B),
           ),
           const SizedBox(width: 6),
-          Text('العظمى $high', style: _valueStyle),
+          Text(context.l10n.highTemp(high), style: _valueStyle),
           Container(
             width: 1,
             height: 16,
@@ -133,7 +142,7 @@ class _HighLowPill extends StatelessWidget {
             color: AppColors.accentGreen,
           ),
           const SizedBox(width: 6),
-          Text('الصغرى $low', style: _valueStyle),
+          Text(context.l10n.lowTemp(low), style: _valueStyle),
         ],
       ),
     );
@@ -190,7 +199,7 @@ class _CloudCoverTile extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'غطاء سحابي $cover%',
+            context.l10n.cloudCoverPct(cover),
             style: const TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w500,
