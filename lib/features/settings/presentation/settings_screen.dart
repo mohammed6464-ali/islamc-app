@@ -195,23 +195,6 @@ class SettingsScreen extends StatelessWidget {
                     },
                   ),
                   SettingsTile(
-                    icon: Icons.dark_mode_outlined,
-                    title: l10n.darkMode,
-                    subtitle: l10n.darkModeSubtitle,
-                    trailing: AppToggle(
-                      value: state.darkMode,
-                      onChanged: (bool value) {
-                        state.setDarkMode(value);
-                        showAppMessage(
-                          context,
-                          value
-                              ? context.l10n.darkModeOn
-                              : context.l10n.darkModeOff,
-                        );
-                      },
-                    ),
-                  ),
-                  SettingsTile(
                     icon: Icons.translate_rounded,
                     title: l10n.language,
                     subtitle: l10n.languageSubtitle,
@@ -274,20 +257,15 @@ class SettingsScreen extends StatelessWidget {
                   SettingsTile(
                     icon: Icons.shield_outlined,
                     title: l10n.privacyPolicy,
-                    onTap: () => _showMissingLegal(
+                    onTap: () => Navigator.of(
                       context,
-                      title: l10n.privacyPolicy,
-                      body: l10n.privacyBody,
-                    ),
+                    ).pushNamed(AppRoutes.privacyPolicy),
                   ),
                   SettingsTile(
                     icon: Icons.gavel_rounded,
                     title: l10n.terms,
-                    onTap: () => _showMissingLegal(
-                      context,
-                      title: l10n.terms,
-                      body: l10n.termsBody,
-                    ),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed(AppRoutes.terms),
                   ),
                   SettingsTile(
                     icon: Icons.mail_outline_rounded,
@@ -295,14 +273,6 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () => showAppMessage(
                       context,
                       l10n.contactUnavailable,
-                    ),
-                  ),
-                  SettingsTile(
-                    icon: Icons.star_outline_rounded,
-                    title: l10n.rateApp,
-                    onTap: () => showAppMessage(
-                      context,
-                      l10n.rateUnavailable,
                     ),
                   ),
                   SettingsTile(
@@ -367,47 +337,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  static void _showMissingLegal(
-    BuildContext context, {
-    required String title,
-    required String body,
-  }) {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: Text(
-          body,
-          style: const TextStyle(
-            fontSize: 13,
-            color: AppColors.textSecondary,
-            height: 1.8,
-          ),
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(
-              context.l10n.ok,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: AppColors.primary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _SettingsIntro extends StatelessWidget {

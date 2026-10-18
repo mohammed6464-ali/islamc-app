@@ -4,6 +4,7 @@ import 'package:islmac_app/core/notifications/notification_gateway.dart';
 import 'package:islmac_app/core/notifications/notification_models.dart';
 import 'package:islmac_app/core/notifications/prayer_notification_scheduler.dart';
 import 'package:islmac_app/core/persistence/settings_store.dart';
+import 'package:islmac_app/core/prayer/prayer_calc_method.dart';
 import 'package:islmac_app/core/prayer/prayer_times_service.dart';
 import 'package:islmac_app/core/state/app_state.dart';
 import 'package:islmac_app/core/time/app_clock.dart';
@@ -100,6 +101,92 @@ void main() {
     expect(gateway.scheduled, isEmpty);
   });
 
+  test('15-minute reminder is 15 minutes before prayer time', () {
+    final times = const PrayerTimesService().calculate(
+      date: DateTime(2026, 9, 7),
+      latitude: 24.7136,
+      longitude: 46.6753,
+      timezoneId: 'Asia/Riyadh',
+    );
+    final List<ScheduledNotification> planned =
+        const PrayerNotificationPlanner().planPrayers(
+          nowUtc: DateTime.utc(2026, 9, 6, 20),
+          days: [times],
+          prefs: const PrayerSchedulePrefs(
+            masterEnabled: true,
+            enabledPrayerIds: <String>{'fajr'},
+            preAlertMinutes: 15,
+            eventAlerts: false,
+            eventReminderIds: <String>{},
+            cityName: 'الرياض',
+          ),
+        );
+    expect(planned, hasLength(2));
+    final ScheduledNotification atPrayer = planned.firstWhere(
+      (ScheduledNotification item) => item.id ==
+          NotificationIds.prayer(
+            dayIndex: 0,
+            prayerId: 'fajr',
+            reminder: false,
+          ),
+    );
+    final ScheduledNotification reminder = planned.firstWhere(
+      (ScheduledNotification item) => item.id ==
+          NotificationIds.prayer(
+            dayIndex: 0,
+            prayerId: 'fajr',
+            reminder: true,
+          ),
+    );
+    expect(
+      atPrayer.fireAt.difference(reminder.fireAt),
+      const Duration(minutes: 15),
+    );
+    expect(atPrayer.id, isNot(reminder.id));
+  });
+
+  test('denied permission keeps previously scheduled alerts', () async {
+    final FakeNotificationGateway gateway = FakeNotificationGateway();
+    final PrayerNotificationScheduler scheduler = PrayerNotificationScheduler(
+      gateway: gateway,
+    );
+    await scheduler.reschedulePrayers(
+      nowUtc: DateTime.utc(2026, 9, 7, 4, 0),
+      today: DateTime(2026, 9, 7),
+      latitude: 24.7136,
+      longitude: 46.6753,
+      timezoneId: 'Asia/Riyadh',
+      method: PrayerCalcMethod.ummAlQura,
+      prefs: const PrayerSchedulePrefs(
+        masterEnabled: true,
+        enabledPrayerIds: <String>{'fajr'},
+        preAlertMinutes: 0,
+        eventAlerts: false,
+        eventReminderIds: <String>{},
+        cityName: 'الرياض',
+      ),
+    );
+    expect(gateway.scheduled, isNotEmpty);
+    gateway.permissionGranted = false;
+    await scheduler.reschedulePrayers(
+      nowUtc: DateTime.utc(2026, 9, 7, 4, 5),
+      today: DateTime(2026, 9, 7),
+      latitude: 24.7136,
+      longitude: 46.6753,
+      timezoneId: 'Asia/Riyadh',
+      method: PrayerCalcMethod.ummAlQura,
+      prefs: const PrayerSchedulePrefs(
+        masterEnabled: true,
+        enabledPrayerIds: <String>{'fajr'},
+        preAlertMinutes: 5,
+        eventAlerts: false,
+        eventReminderIds: <String>{},
+        cityName: 'الرياض',
+      ),
+    );
+    expect(gateway.scheduled, isNotEmpty);
+  });
+
   test('test notification uses a dedicated id', () async {
     final FakeNotificationGateway gateway = FakeNotificationGateway();
     final PrayerNotificationScheduler scheduler = PrayerNotificationScheduler(
@@ -117,5 +204,58 @@ void main() {
       gateway.scheduled.values.where((ScheduledNotification n) => n.id == NotificationIds.test),
       hasLength(1),
     );
+  });
+
+  test('60-second test uses a separate id and can be cancelled alone', () async {
+    final FakeNotificationGateway gateway = FakeNotificationGateway();
+    final PrayerNotificationScheduler scheduler = PrayerNotificationScheduler(
+      gateway: gateway,
+    );
+    await scheduler.reschedulePrayers(
+      nowUtc: DateTime.utc(2026, 9, 7, 4, 0),
+      today: DateTime(2026, 9, 7),
+      latitude: 24.7136,
+      longitude: 46.6753,
+      timezoneId: 'Asia/Riyadh',
+      method: PrayerCalcMethod.ummAlQura,
+      prefs: const PrayerSchedulePrefs(
+        masterEnabled: true,
+        enabledPrayerIds: <String>{'fajr'},
+        preAlertMinutes: 0,
+        eventAlerts: false,
+        eventReminderIds: <String>{},
+        cityName: 'الرياض',
+      ),
+    );
+    final int prayerCount = gateway.scheduled.length;
+    await scheduler.scheduleTestNotification(
+      nowUtc: DateTime.utc(2026, 9, 7, 7, 0),
+      delay: const Duration(seconds: 60),
+      id: NotificationIds.test60s,
+    );
+    await scheduler.scheduleTestNotification(
+      nowUtc: DateTime.utc(2026, 9, 7, 7, 0),
+    );
+    expect(gateway.scheduled.containsKey(NotificationIds.test), isTrue);
+    expect(gateway.scheduled.containsKey(NotificationIds.test60s), isTrue);
+    expect(NotificationIds.isTest(NotificationIds.test), isTrue);
+    expect(NotificationIds.isPrayer(NotificationIds.test), isFalse);
+    await scheduler.cancelTestNotifications();
+    expect(gateway.scheduled.containsKey(NotificationIds.test), isFalse);
+    expect(gateway.scheduled.containsKey(NotificationIds.test60s), isFalse);
+    expect(gateway.scheduled.length, prayerCount);
+  });
+
+  test('inexact fallback is recorded when exact alarms are unavailable', () async {
+    final FakeNotificationGateway gateway = FakeNotificationGateway(
+      exactAllowed: false,
+    );
+    final PrayerNotificationScheduler scheduler = PrayerNotificationScheduler(
+      gateway: gateway,
+    );
+    await scheduler.scheduleTestNotification(
+      nowUtc: DateTime.utc(2026, 9, 7, 7, 0),
+    );
+    expect(gateway.lastScheduleUsedInexact, isTrue);
   });
 }

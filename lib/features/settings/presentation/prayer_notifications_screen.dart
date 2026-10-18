@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -7,6 +8,8 @@ import '../../../core/data/demo_data.dart';
 import '../../../core/data/models.dart';
 import '../../../core/l10n/app_copy.dart';
 import '../../../core/l10n/app_language.dart';
+import '../../../core/notifications/notification_gateway.dart';
+import '../../../core/notifications/notification_models.dart';
 import '../../../core/state/app_scope.dart';
 import '../../../core/state/app_state.dart';
 import '../../../core/theme/app_colors.dart';
@@ -100,9 +103,9 @@ class PrayerNotificationsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 14),
                     const AdhanTrialCard(),
-                    if (kDebugMode) ...<Widget>[
+                    if (kShowNotificationDiagnostics) ...<Widget>[
                       const SizedBox(height: 14),
-                      const _TestNotificationCard(),
+                      const _NotificationDiagnosticsCard(),
                     ],
                     const SizedBox(height: 14),
                     InfoNote(
@@ -443,13 +446,65 @@ class _PreAlertOption extends StatelessWidget {
   }
 }
 
-class _TestNotificationCard extends StatelessWidget {
-  const _TestNotificationCard();
+class _NotificationDiagnosticsCard extends StatefulWidget {
+  const _NotificationDiagnosticsCard();
+
+  @override
+  State<_NotificationDiagnosticsCard> createState() =>
+      _NotificationDiagnosticsCardState();
+}
+
+class _NotificationDiagnosticsCardState
+    extends State<_NotificationDiagnosticsCard> {
+  NotificationDiagnostics? _snapshot;
+
+  Future<void> _refresh() async {
+    final NotificationDiagnostics next = await AppScope.of(
+      context,
+    ).notificationDiagnostics();
+    if (!mounted) {
+      return;
+    }
+    setState(() => _snapshot = next);
+  }
+
+  Future<void> _schedule(Duration delay, int id) async {
+    final AppState state = AppScope.of(context);
+    final DateTime? at = await state.scheduleTestNotification(
+      delay: delay,
+      id: id,
+    );
+    if (!mounted) {
+      return;
+    }
+    await _refresh();
+    if (!mounted) {
+      return;
+    }
+    showAppMessage(
+      context,
+      at == null
+          ? (state.notificationPermissionMessage ?? context.l10n.testFailed)
+          : context.l10n.testScheduled,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        unawaited(_refresh());
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final AppState state = AppScope.of(context);
-    final DateTime? scheduled = state.lastTestNotificationAt;
+    final l10n = context.l10n;
+    final NotificationDiagnostics? diag = _snapshot;
+    final String on = l10n.diagOn;
+    final String off = l10n.diagOff;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -463,57 +518,106 @@ class _TestNotificationCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             SectionTitle(
-              title: context.l10n.testNotification,
-              icon: Icons.notification_add_outlined,
+              title: l10n.notificationDiagnostics,
+              icon: Icons.bug_report_outlined,
             ),
             const SizedBox(height: 8),
             Text(
-              context.l10n.testNotificationBody,
+              l10n.testNotificationBody,
               style: const TextStyle(
                 fontSize: 12,
                 height: 1.55,
                 color: AppColors.textSecondary,
               ),
             ),
-            if (scheduled != null) ...<Widget>[
-              const SizedBox(height: 8),
-              Text(
-                context.l10n.notificationAt(
-                  '${scheduled.hour.toString().padLeft(2, '0')}:'
-                  '${scheduled.minute.toString().padLeft(2, '0')}',
+            if (diag != null) ...<Widget>[
+              const SizedBox(height: 10),
+              _diagLine(
+                l10n.diagPermission(diag.notificationsAllowed ? on : off),
+              ),
+              _diagLine(l10n.diagExactAlarms(diag.exactAlarmsAllowed ? on : off)),
+              _diagLine(l10n.diagInexact(diag.usedInexactFallback ? on : off)),
+              _diagLine(l10n.diagChannel(diag.channelId)),
+              _diagLine(l10n.diagOffset(diag.preAlertMinutes)),
+              _diagLine(l10n.diagMosque(diag.mosqueId)),
+              _diagLine(l10n.diagDeviceTime(diag.deviceTimeIso)),
+              _diagLine(l10n.diagTimezone(diag.timezoneId)),
+              _diagLine(
+                l10n.diagNextPrayer(
+                  AppCopy(l10n).prayerName(diag.nextPrayerId),
+                  diag.nextPrayerAtIso ?? '—',
                 ),
-                style: const TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+              ),
+              _diagLine(
+                l10n.diagNextScheduled(diag.nextScheduledAtIso ?? '—'),
+              ),
+              _diagLine(l10n.diagPendingCount(diag.pendingCount)),
+              _diagLine(
+                l10n.diagPendingIds(
+                  diag.pendingIds.isEmpty ? '—' : diag.pendingIds.join(', '),
                 ),
               ),
             ],
             const SizedBox(height: 12),
             PrimaryButton(
-              label: context.l10n.scheduleTest,
+              label: l10n.scheduleTest60s,
+              icon: Icons.timer_outlined,
+              height: 46,
+              onPressed: () => _schedule(
+                const Duration(seconds: 60),
+                NotificationIds.test60s,
+              ),
+            ),
+            const SizedBox(height: 8),
+            PrimaryButton(
+              label: l10n.scheduleTest2m,
               icon: Icons.schedule_send_outlined,
               height: 46,
+              onPressed: () => _schedule(
+                const Duration(minutes: 2),
+                NotificationIds.test,
+              ),
+            ),
+            const SizedBox(height: 8),
+            PrimaryButton(
+              label: l10n.inspectPending,
+              icon: Icons.list_alt_outlined,
+              height: 46,
+              onPressed: _refresh,
+            ),
+            const SizedBox(height: 8),
+            PrimaryButton(
+              label: l10n.cancelTestNotifications,
+              icon: Icons.notifications_off_outlined,
+              height: 46,
               onPressed: () async {
-                final DateTime? at = await state.scheduleTestNotification();
+                final String cancelled = context.l10n.testNotificationsCancelled;
+                await AppScope.of(context).cancelTestNotifications();
                 if (!context.mounted) {
                   return;
                 }
-                if (at == null) {
-                  showAppMessage(
-                    context,
-                    state.notificationPermissionMessage ??
-                        context.l10n.testFailed,
-                  );
+                await _refresh();
+                if (!context.mounted) {
                   return;
                 }
-                showAppMessage(
-                  context,
-                  context.l10n.testScheduled,
-                );
+                showAppMessage(context, cancelled);
               },
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _diagLine(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          height: 1.45,
+          color: AppColors.textPrimary,
         ),
       ),
     );

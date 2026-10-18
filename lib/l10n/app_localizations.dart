@@ -236,30 +236,6 @@ abstract class AppLocalizations {
   /// **'App interface and prayer labels'**
   String get languageSubtitle;
 
-  /// No description provided for @darkMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark mode'**
-  String get darkMode;
-
-  /// No description provided for @darkModeOn.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark mode is on.'**
-  String get darkModeOn;
-
-  /// No description provided for @darkModeOff.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark mode is off.'**
-  String get darkModeOff;
-
-  /// No description provided for @darkModeSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Dark background with brand colors'**
-  String get darkModeSubtitle;
-
   /// No description provided for @appearance.
   ///
   /// In en, this message translates to:
@@ -446,35 +422,161 @@ abstract class AppLocalizations {
   /// **'Terms and conditions'**
   String get terms;
 
-  /// No description provided for @rateApp.
-  ///
-  /// In en, this message translates to:
-  /// **'Rate the app'**
-  String get rateApp;
-
   /// No description provided for @shareApp.
   ///
   /// In en, this message translates to:
   /// **'Share the app'**
   String get shareApp;
 
-  /// No description provided for @rateUnavailable.
+  /// No description provided for @legalLastUpdated.
   ///
   /// In en, this message translates to:
-  /// **'Rating is available after store publication.'**
-  String get rateUnavailable;
+  /// **'Last updated: October 2026'**
+  String get legalLastUpdated;
 
   /// No description provided for @privacyBody.
   ///
   /// In en, this message translates to:
-  /// **'No official privacy-policy URL has been provided yet. Prayer times are calculated on device. Location is used for Qibla and weather when allowed.'**
+  /// **'تقويم ومواقيت is a personal companion for prayer times, Qibla, weather, and the Hijri and Gregorian calendars. We do not create accounts, and we do not run a user-data cloud for this app.'**
   String get privacyBody;
+
+  /// No description provided for @privacyDeviceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data on your device'**
+  String get privacyDeviceTitle;
+
+  /// No description provided for @privacyDeviceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your choices — city, language, calculation method, Adhan mosque, temperature unit, calendar view, and alert preferences — are saved locally on the device so they remain after you close the app. These settings are not uploaded to our servers.'**
+  String get privacyDeviceBody;
+
+  /// No description provided for @privacyLocationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get privacyLocationTitle;
+
+  /// No description provided for @privacyLocationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If you allow location access, coordinates are used on the device to calculate prayer times and Qibla, and to request weather for your area. You can turn GPS off and pick a city manually at any time.'**
+  String get privacyLocationBody;
+
+  /// No description provided for @privacyWeatherTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather'**
+  String get privacyWeatherTitle;
+
+  /// No description provided for @privacyWeatherBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Current conditions and the forecast are requested from the Open-Meteo weather service using coordinates or the selected city. A short cache is kept on the device to limit repeat requests.'**
+  String get privacyWeatherBody;
+
+  /// No description provided for @privacyNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications and Adhan'**
+  String get privacyNotificationsTitle;
+
+  /// No description provided for @privacyNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer and occasion reminders are scheduled locally through the device notification system. Adhan audio plays on your device. We do not send marketing messages.'**
+  String get privacyNotificationsBody;
+
+  /// No description provided for @privacyShareTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sharing and retention'**
+  String get privacyShareTitle;
+
+  /// No description provided for @privacyShareBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not sell your data. We do not require your name, email, or phone number to use the app. Local settings remain until you clear the app data or uninstall it.'**
+  String get privacyShareBody;
 
   /// No description provided for @termsBody.
   ///
   /// In en, this message translates to:
-  /// **'Terms and conditions have not been published yet. An official URL is required before release.'**
+  /// **'By using تقويم ومواقيت you agree to these terms. If you do not agree, please stop using the app.'**
   String get termsBody;
+
+  /// No description provided for @termsServiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What the app provides'**
+  String get termsServiceTitle;
+
+  /// No description provided for @termsServiceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The app displays prayer times, Qibla, weather, a Hijri and Gregorian calendar, and Islamic and national occasions. Some features need the permissions you grant, and weather needs a network connection.'**
+  String get termsServiceBody;
+
+  /// No description provided for @termsPrayerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer times'**
+  String get termsPrayerTitle;
+
+  /// No description provided for @termsPrayerBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Times are calculated on the device, by default according to the Umm Al-Qura method. You may choose another calculation method. Displayed times help you organize the day; they are not a fatwa or an official moon-sighting announcement.'**
+  String get termsPrayerBody;
+
+  /// No description provided for @termsAccuracyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy'**
+  String get termsAccuracyTitle;
+
+  /// No description provided for @termsAccuracyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Qibla, weather, and calendar dates may differ because of device sensors, network delays, or later official announcements. Confirm important worship times and holidays from official sources when needed.'**
+  String get termsAccuracyBody;
+
+  /// No description provided for @termsUseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your responsibilities'**
+  String get termsUseTitle;
+
+  /// No description provided for @termsUseBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the app lawfully. Do not rely on it as the sole source for legal or religious rulings. Keep location and notification permissions under your control.'**
+  String get termsUseBody;
+
+  /// No description provided for @termsLiabilityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Limitation of liability'**
+  String get termsLiabilityTitle;
+
+  /// No description provided for @termsLiabilityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The app is provided as is. We are not liable for delays, calculation differences, missed reminders, or decisions based on the information shown.'**
+  String get termsLiabilityBody;
+
+  /// No description provided for @termsChangesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes'**
+  String get termsChangesTitle;
+
+  /// No description provided for @termsChangesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'These terms and the privacy policy may be updated inside the app. Continued use after an update means you accept the latest version.'**
+  String get termsChangesBody;
 
   /// No description provided for @aboutBody.
   ///
@@ -907,6 +1009,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This is a test. Background the app or lock the device.'**
   String get testNotificationMessage;
+
+  /// No description provided for @notificationDiagnostics.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification diagnostics'**
+  String get notificationDiagnostics;
+
+  /// No description provided for @diagPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification permission: {value}'**
+  String diagPermission(String value);
+
+  /// No description provided for @diagExactAlarms.
+  ///
+  /// In en, this message translates to:
+  /// **'Exact alarms: {value}'**
+  String diagExactAlarms(String value);
+
+  /// No description provided for @diagChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Channel: {id}'**
+  String diagChannel(String id);
+
+  /// No description provided for @diagOffset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder offset: {minutes} min'**
+  String diagOffset(int minutes);
+
+  /// No description provided for @diagMosque.
+  ///
+  /// In en, this message translates to:
+  /// **'Mosque: {name}'**
+  String diagMosque(String name);
+
+  /// No description provided for @diagDeviceTime.
+  ///
+  /// In en, this message translates to:
+  /// **'UTC now: {time}'**
+  String diagDeviceTime(String time);
+
+  /// No description provided for @diagTimezone.
+  ///
+  /// In en, this message translates to:
+  /// **'Timezone: {id}'**
+  String diagTimezone(String id);
+
+  /// No description provided for @diagNextPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Next prayer: {name} at {time}'**
+  String diagNextPrayer(String name, String time);
+
+  /// No description provided for @diagNextScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Next scheduled alert: {time}'**
+  String diagNextScheduled(String time);
+
+  /// No description provided for @diagPendingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending notifications: {count}'**
+  String diagPendingCount(int count);
+
+  /// No description provided for @diagPendingIds.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending IDs: {ids}'**
+  String diagPendingIds(String ids);
+
+  /// No description provided for @diagInexact.
+  ///
+  /// In en, this message translates to:
+  /// **'Using inexact alarms: {value}'**
+  String diagInexact(String value);
+
+  /// No description provided for @diagOn.
+  ///
+  /// In en, this message translates to:
+  /// **'on'**
+  String get diagOn;
+
+  /// No description provided for @diagOff.
+  ///
+  /// In en, this message translates to:
+  /// **'off'**
+  String get diagOff;
+
+  /// No description provided for @scheduleTest60s.
+  ///
+  /// In en, this message translates to:
+  /// **'Test in 60 seconds'**
+  String get scheduleTest60s;
+
+  /// No description provided for @scheduleTest2m.
+  ///
+  /// In en, this message translates to:
+  /// **'Test in 2 minutes'**
+  String get scheduleTest2m;
+
+  /// No description provided for @inspectPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspect pending notifications'**
+  String get inspectPending;
+
+  /// No description provided for @cancelTestNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel test notifications'**
+  String get cancelTestNotifications;
+
+  /// No description provided for @testNotificationsCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Test notifications cancelled.'**
+  String get testNotificationsCancelled;
 
   /// No description provided for @eventReminderTitle.
   ///
@@ -2545,18 +2767,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No official contact address has been provided yet.'**
   String get contactUnavailable;
-
-  /// No description provided for @lightMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Light mode'**
-  String get lightMode;
-
-  /// No description provided for @systemDefault.
-  ///
-  /// In en, this message translates to:
-  /// **'System default'**
-  String get systemDefault;
 
   /// No description provided for @shareEventText.
   ///

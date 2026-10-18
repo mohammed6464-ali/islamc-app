@@ -7,8 +7,8 @@ import '../../../../core/l10n/app_language.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/common_widgets.dart';
+import '../../../../core/widgets/decorative_patterns.dart';
 
 /// Month grid showing the Gregorian day with its Hijri counterpart beneath.
 class CalendarMonthCard extends StatelessWidget {
@@ -31,32 +31,69 @@ class CalendarMonthCard extends StatelessWidget {
     final int cells =
         ((first.weekday % 7) + lastDay + 6) ~/ 7 * 7;
 
-    return AppCard(
-      radius: 18,
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
-      child: Column(
-        children: <Widget>[
-          const _CalendarModeSwitch(),
-          const SizedBox(height: 14),
-          _MonthNavigator(month: month, hijriMonth: hijriMonth),
-          const SizedBox(height: 12),
-          const CardDivider(indent: 2),
-          const SizedBox(height: 8),
-          const _WeekdayHeader(),
-          const SizedBox(height: 4),
-          for (int week = 0; week < cells ~/ 7; week++)
-            Row(
-              children: <Widget>[
-                for (int day = 0; day < 7; day++)
-                  Expanded(
-                    child: _DayCell(
-                      date: gridStart.add(Duration(days: week * 7 + day)),
-                      month: month,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.bottomLeft,
+          colors: <Color>[
+            AppColors.accentGreen,
+            AppColors.primary,
+            AppColors.darkGreen,
+          ],
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.22),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          children: <Widget>[
+            const Positioned.fill(child: DotGridPattern()),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+              child: Column(
+                children: <Widget>[
+                  const _CalendarModeSwitch(),
+                  const SizedBox(height: 14),
+                  _MonthNavigator(month: month, hijriMonth: hijriMonth),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2),
+                    child: Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Colors.white.withValues(alpha: 0.14),
                     ),
                   ),
-              ],
+                  const SizedBox(height: 8),
+                  const _WeekdayHeader(),
+                  const SizedBox(height: 4),
+                  for (int week = 0; week < cells ~/ 7; week++)
+                    Row(
+                      children: <Widget>[
+                        for (int day = 0; day < 7; day++)
+                          Expanded(
+                            child: _DayCell(
+                              date: gridStart.add(
+                                Duration(days: week * 7 + day),
+                              ),
+                              month: month,
+                            ),
+                          ),
+                      ],
+                    ),
+                ],
+              ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -72,8 +109,9 @@ class _CalendarModeSwitch extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.pillGray,
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
       ),
       child: Row(
         children: <Widget>[
@@ -118,24 +156,19 @@ class _SwitchSegment extends StatelessWidget {
         height: 38,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? AppColors.surface : Colors.transparent,
+          color: selected
+              ? Colors.white.withValues(alpha: 0.18)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(11),
-          boxShadow: selected
-              ? <BoxShadow>[
-                  BoxShadow(
-                    color: AppColors.textPrimary.withValues(alpha: 0.05),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 13.5,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-            color: selected ? AppColors.primary : AppColors.textSecondary,
+            color: selected
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.72),
           ),
         ),
       ),
@@ -175,7 +208,7 @@ class _MonthNavigator extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: Colors.white,
                   height: 1.3,
                 ),
               ),
@@ -185,10 +218,10 @@ class _MonthNavigator extends StatelessWidget {
                     : copy.hijriMonthYear(hijriMonth),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.goldDeep,
+                  color: Colors.white.withValues(alpha: 0.72),
                   height: 1.4,
                 ),
               ),
@@ -223,15 +256,17 @@ class _NavButton extends StatelessWidget {
     return Tooltip(
       message: tooltip,
       child: Material(
-        color: AppColors.pillGray,
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(13),
         child: InkWell(
           borderRadius: BorderRadius.circular(13),
           onTap: onPressed,
+          splashColor: Colors.white.withValues(alpha: 0.12),
+          highlightColor: Colors.white.withValues(alpha: 0.08),
           child: SizedBox(
             width: 42,
             height: 42,
-            child: Icon(icon, size: 22, color: AppColors.textPrimary),
+            child: Icon(icon, size: 22, color: Colors.white),
           ),
         ),
       ),
@@ -260,8 +295,8 @@ class _WeekdayHeader extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: i == 5 ? FontWeight.w700 : FontWeight.w500,
                     color: i == 5
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.72),
                   ),
                 ),
               ),
@@ -287,45 +322,44 @@ class _DayCell extends StatelessWidget {
         date.year == state.today.year &&
         date.month == state.today.month &&
         date.day == state.today.day;
-    final bool isFriday = date.weekday == DateTime.friday;
     final IslamicEvent? event = state.eventOn(date);
     final bool isSelected = date == state.selectedDate && !isToday;
     final HijriDate hijri = HijriDate.fromGregorian(date);
 
     final bool national = event?.kind == EventKind.national;
-    final Color accent = national ? AppColors.goldDeep : AppColors.primary;
+    final Color accent = national ? AppColors.gold : AppColors.lightMint;
 
     Color numberColor;
     if (isToday) {
-      numberColor = AppColors.surface;
-    } else if (!inMonth) {
-      numberColor = AppColors.textMuted;
-    } else if (event != null) {
-      numberColor = accent;
-    } else if (isFriday) {
       numberColor = AppColors.primary;
+    } else if (!inMonth) {
+      numberColor = Colors.white.withValues(alpha: 0.38);
+    } else if (event != null) {
+      numberColor = national ? AppColors.gold : Colors.white;
     } else {
-      numberColor = AppColors.textPrimary;
+      numberColor = Colors.white;
     }
 
     BoxDecoration? decoration;
     if (isToday) {
       decoration = const BoxDecoration(
-        color: AppColors.primary,
+        color: Colors.white,
         shape: BoxShape.circle,
       );
     } else if (event != null) {
       decoration = BoxDecoration(
-        color: national ? AppColors.amberBg : AppColors.mintSoft,
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(13),
         border: Border.all(
-          color: national ? AppColors.amberPill : AppColors.mintBorder,
+          color: national
+              ? AppColors.gold.withValues(alpha: 0.7)
+              : Colors.white.withValues(alpha: 0.22),
         ),
       );
     } else if (isSelected) {
       decoration = BoxDecoration(
         borderRadius: BorderRadius.circular(13),
-        border: Border.all(color: AppColors.mintBorder),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
       );
     }
 
@@ -363,10 +397,10 @@ class _DayCell extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w400,
                       color: isToday
-                          ? AppColors.surface.withValues(alpha: 0.85)
-                          : (inMonth
-                                ? AppColors.textSecondary
-                                : AppColors.textMuted),
+                          ? AppColors.primary.withValues(alpha: 0.72)
+                          : Colors.white.withValues(
+                              alpha: inMonth ? 0.62 : 0.32,
+                            ),
                       height: 1.2,
                     ),
                   ),

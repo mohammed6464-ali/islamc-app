@@ -39,12 +39,11 @@ void main() {
     expect(DemoData.greeting, 'تقويمك .. مواقيتك .. في مكان واحد');
   });
 
-  test('temperature unit, calendar, theme and mosque persist', () async {
+  test('temperature unit, calendar and mosque persist', () async {
     final MemorySettingsStore store = MemorySettingsStore();
     final AppState first = buildState(store: store);
     first.setUseFahrenheit(true);
     first.setHijriView(true);
-    first.setDarkMode(true);
     first.setAdhanMosque(AdhanMosque.madinah);
     await first.flushPersistence();
 
@@ -52,7 +51,6 @@ void main() {
     await restored.hydrate();
     expect(restored.useFahrenheit, isTrue);
     expect(restored.hijriView, isTrue);
-    expect(restored.darkMode, isTrue);
     expect(restored.adhanMosque, AdhanMosque.madinah);
     expect(restored.formatTemperature(10), '50°');
   });

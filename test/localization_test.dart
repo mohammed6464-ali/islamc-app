@@ -225,7 +225,7 @@ void main() {
     expect(find.text('تقويمك .. مواقيتك .. في مكان واحد'), findsOneWidget);
   });
 
-  testWidgets('dark mode still renders after switching to English', (
+  testWidgets('English home still uses the light brand theme', (
     WidgetTester tester,
   ) async {
     tester.view.devicePixelRatio = 3;
@@ -233,7 +233,6 @@ void main() {
     addTearDown(tester.view.reset);
 
     final AppState state = buildState();
-    state.setDarkMode(true);
     state.setLanguage('en');
     await tester.pumpWidget(MawaqeetnaApp(state: state));
     await tester.pump(const Duration(milliseconds: 16));
@@ -243,8 +242,10 @@ void main() {
     await tester.tap(find.text('Allow location access'));
     await tester.pumpAndSettle();
 
-    expect(state.darkMode, isTrue);
     expect(AppColors.primary, const Color(0xFF114234));
-    expect(find.text('Your Calendar. Your Prayer Times. All in One Place.'), findsOneWidget);
+    expect(
+      find.text('Your Calendar. Your Prayer Times. All in One Place.'),
+      findsOneWidget,
+    );
   });
 }

@@ -6,7 +6,7 @@ import '../../../../core/l10n/app_language.dart';
 import '../../../../core/state/app_scope.dart';
 import '../../../../core/state/app_state.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/common_widgets.dart';
+import '../../../../core/widgets/decorative_patterns.dart';
 
 /// Big temperature block, high/low pill, cloud-cover tile and the two
 /// footer lines.
@@ -20,87 +20,104 @@ class WeatherHeroCard extends StatelessWidget {
     final WeatherData weather = state.weather;
     final PrayerTime next = state.nextPrayer;
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
         gradient: const LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
-          colors: <Color>[AppColors.surface, AppColors.mintTint],
+          colors: <Color>[
+            AppColors.accentGreen,
+            AppColors.primary,
+            AppColors.darkGreen,
+          ],
         ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: AppColors.textPrimary.withValues(alpha: 0.025),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AppColors.primary.withValues(alpha: 0.22),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
-      child: Column(
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: <Widget>[
-              Text(
-                state.formatTemperature(weather.temperature),
-                textDirection: TextDirection.ltr,
-                style: const TextStyle(
-                  fontSize: 64,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
-                  height: 1.05,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  state.temperatureUnitNameFor(copy),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: Stack(
+          children: <Widget>[
+            const Positioned.fill(child: DotGridPattern()),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
+              child: Column(
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: <Widget>[
+                      Text(
+                        state.formatTemperature(weather.temperature),
+                        textDirection: TextDirection.ltr,
+                        style: const TextStyle(
+                          fontSize: 64,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          height: 1.05,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Text(
+                          state.temperatureUnitNameFor(copy),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withValues(alpha: 0.72),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '${copy.weatherCondition(weather.weatherCode, isDay: weather.isDay)} • ${copy.cityName(state.city)}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _HighLowPill(
+                    high: state.formatTemperature(weather.high),
+                    low: state.formatTemperature(weather.low),
+                  ),
+                  const SizedBox(height: 16),
+                  _CloudCoverTile(cover: weather.cloudCover),
+                  const SizedBox(height: 16),
+                  Divider(
+                    height: 1,
+                    thickness: 1,
+                    color: Colors.white.withValues(alpha: 0.14),
+                  ),
+                  const SizedBox(height: 14),
+                  _FooterLine(
+                    icon: Icons.mosque_outlined,
+                    text: context.l10n.nextAdhanAt(
+                      copy.prayerName(next.id),
+                      copy.timeWithPeriod(next),
+                    ),
+                  ),
+                  const SizedBox(height: 9),
+                  _FooterLine(
+                    icon: Icons.air_rounded,
+                    text: copy.weatherNote(weather.weatherCode),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${copy.weatherCondition(weather.weatherCode, isDay: weather.isDay)} • ${copy.cityName(state.city)}',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
             ),
-          ),
-          const SizedBox(height: 14),
-          _HighLowPill(
-            high: state.formatTemperature(weather.high),
-            low: state.formatTemperature(weather.low),
-          ),
-          const SizedBox(height: 16),
-          _CloudCoverTile(cover: weather.cloudCover),
-          const SizedBox(height: 16),
-          const CardDivider(),
-          const SizedBox(height: 14),
-          _FooterLine(
-            icon: Icons.mosque_outlined,
-            text: context.l10n.nextAdhanAt(
-              copy.prayerName(next.id),
-              copy.timeWithPeriod(next),
-            ),
-          ),
-          const SizedBox(height: 9),
-          _FooterLine(
-            icon: Icons.air_rounded,
-            text: copy.weatherNote(weather.weatherCode),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -117,8 +134,9 @@ class _HighLowPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: AppColors.pillGray,
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -126,7 +144,7 @@ class _HighLowPill extends StatelessWidget {
           const Icon(
             Icons.arrow_upward_rounded,
             size: 14,
-            color: Color(0xFFC0392B),
+            color: Color(0xFFFFB4A8),
           ),
           const SizedBox(width: 6),
           Text(context.l10n.highTemp(high), style: _valueStyle),
@@ -134,12 +152,12 @@ class _HighLowPill extends StatelessWidget {
             width: 1,
             height: 16,
             margin: const EdgeInsets.symmetric(horizontal: 12),
-            color: AppColors.divider,
+            color: Colors.white.withValues(alpha: 0.22),
           ),
           const Icon(
             Icons.arrow_downward_rounded,
             size: 14,
-            color: AppColors.accentGreen,
+            color: AppColors.lightMint,
           ),
           const SizedBox(width: 6),
           Text(context.l10n.lowTemp(low), style: _valueStyle),
@@ -151,7 +169,7 @@ class _HighLowPill extends StatelessWidget {
   static const TextStyle _valueStyle = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
+    color: Colors.white,
   );
 }
 
@@ -166,8 +184,9 @@ class _CloudCoverTile extends StatelessWidget {
       width: 150,
       padding: const EdgeInsets.symmetric(vertical: 18),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Colors.white.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
       ),
       child: Column(
         children: <Widget>[
@@ -191,7 +210,7 @@ class _CloudCoverTile extends StatelessWidget {
                   child: Icon(
                     Icons.cloud_outlined,
                     size: 30,
-                    color: AppColors.primary,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -200,10 +219,10 @@ class _CloudCoverTile extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             context.l10n.cloudCoverPct(cover),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11.5,
               fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+              color: Colors.white.withValues(alpha: 0.78),
             ),
           ),
         ],
@@ -222,15 +241,15 @@ class _FooterLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-        Icon(icon, size: 17, color: AppColors.primary),
+        Icon(icon, size: 17, color: Colors.white.withValues(alpha: 0.9)),
         const SizedBox(width: 9),
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: AppColors.accentGreen,
+              color: Colors.white.withValues(alpha: 0.92),
             ),
           ),
         ),

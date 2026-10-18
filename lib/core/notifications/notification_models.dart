@@ -73,7 +73,9 @@ class NotificationIds {
 
   static const int prayerBase = 10000;
   static const int eventBase = 30000;
+  static const int testRangeStart = 90000;
   static const int test = 90001;
+  static const int test60s = 90002;
 
   static const Map<String, int> prayerSlots = <String, int>{
     'fajr': 0,
@@ -97,5 +99,40 @@ class NotificationIds {
       eventBase + (eventId.hashCode.abs() % 9000);
 
   static bool isPrayer(int id) => id >= prayerBase && id < eventBase;
-  static bool isEvent(int id) => id >= eventBase && id < test;
+  static bool isEvent(int id) => id >= eventBase && id < testRangeStart;
+  static bool isTest(int id) => id >= testRangeStart;
+}
+
+class NotificationDiagnostics {
+  const NotificationDiagnostics({
+    required this.notificationsAllowed,
+    required this.exactAlarmsAllowed,
+    required this.usedInexactFallback,
+    required this.channelId,
+    required this.preAlertMinutes,
+    required this.mosqueId,
+    required this.deviceTimeIso,
+    required this.timezoneId,
+    required this.nextPrayerId,
+    required this.nextPrayerAtIso,
+    required this.nextScheduledAtIso,
+    required this.pendingCount,
+    required this.pendingIds,
+    this.scheduleError,
+  });
+
+  final bool notificationsAllowed;
+  final bool exactAlarmsAllowed;
+  final bool usedInexactFallback;
+  final String channelId;
+  final int preAlertMinutes;
+  final String mosqueId;
+  final String deviceTimeIso;
+  final String timezoneId;
+  final String nextPrayerId;
+  final String? nextPrayerAtIso;
+  final String? nextScheduledAtIso;
+  final int pendingCount;
+  final List<int> pendingIds;
+  final String? scheduleError;
 }

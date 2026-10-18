@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -7,16 +8,27 @@ import 'notification_models.dart';
 
 typedef NotificationTapCallback = void Function(NotificationPayload payload);
 
+/// Debug builds always show it. Release can opt in with
+/// `--dart-define=NOTIFICATION_DIAGNOSTICS=true`.
+const bool kShowNotificationDiagnostics =
+    bool.fromEnvironment('NOTIFICATION_DIAGNOSTICS') || kDebugMode;
+
 abstract class NotificationGateway {
   Future<void> initialize({NotificationTapCallback? onTap});
 
-  Future<bool> requestPermission();
+  Future<bool> requestPermission({bool requestExactAlarms = true});
 
   Future<bool> notificationsAllowed();
 
   Future<bool> exactAlarmsAllowed();
 
   Future<void> openSystemSettings();
+
+  String get channelId;
+
+  bool get lastScheduleUsedInexact;
+
+  String? get lastScheduleError;
 
   Future<void> schedule(ScheduledNotification notification);
 
@@ -33,20 +45,34 @@ class FlutterNotificationGateway implements NotificationGateway {
   FlutterNotificationGateway({FlutterLocalNotificationsPlugin? plugin})
     : _plugin = plugin ?? FlutterLocalNotificationsPlugin();
 
-  static const String channelId = 'prayer_adhan_v1';
+  /// v2 migrates the Android 8+ channel so sound/importance can be set
+  /// correctly. v1 cannot be mutated after first creation.
+  static const String channelIdValue = 'prayer_adhan_v2';
   static const String channelName = 'تنبيهات الصلاة';
+  static const String notificationIcon = 'ic_stat_notify';
 
   final FlutterLocalNotificationsPlugin _plugin;
   NotificationTapCallback? _onTap;
   NotificationPayload? _launchPayload;
   bool _initialized = false;
+  bool _lastScheduleUsedInexact = false;
+  String? _lastScheduleError;
+
+  @override
+  String get channelId => channelIdValue;
+
+  @override
+  bool get lastScheduleUsedInexact => _lastScheduleUsedInexact;
+
+  @override
+  String? get lastScheduleError => _lastScheduleError;
 
   @override
   Future<void> initialize({NotificationTapCallback? onTap}) async {
     _onTap = onTap;
     AppTimezone.ensureInitialized();
     const AndroidInitializationSettings android = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      notificationIcon,
     );
     const DarwinInitializationSettings ios = DarwinInitializationSettings(
       requestAlertPermission: false,
@@ -72,10 +98,32 @@ class FlutterNotificationGateway implements NotificationGateway {
       );
     }
     _initialized = true;
+    await _ensureAndroidChannel();
+  }
+
+  Future<void> _ensureAndroidChannel() async {
+    final AndroidFlutterLocalNotificationsPlugin? android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android == null) {
+      return;
+    }
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      channelIdValue,
+      channelName,
+      description: 'أذان وإشعارات أوقات الصلاة',
+      importance: Importance.max,
+      playSound: true,
+      sound: RawResourceAndroidNotificationSound('adhan_notify'),
+      enableVibration: true,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+    );
+    await android.createNotificationChannel(channel);
   }
 
   @override
-  Future<bool> requestPermission() async {
+  Future<bool> requestPermission({bool requestExactAlarms = true}) async {
     await _ensureInitialized();
     final AndroidFlutterLocalNotificationsPlugin? android = _plugin
         .resolvePlatformSpecificImplementation<
@@ -83,7 +131,8 @@ class FlutterNotificationGateway implements NotificationGateway {
         >();
     final bool androidOk =
         await android?.requestNotificationsPermission() ?? true;
-    if (await android?.canScheduleExactNotifications() == false) {
+    if (requestExactAlarms &&
+        await android?.canScheduleExactNotifications() == false) {
       await android?.requestExactAlarmsPermission();
     }
     final IOSFlutterLocalNotificationsPlugin? ios = _plugin
@@ -125,6 +174,10 @@ class FlutterNotificationGateway implements NotificationGateway {
   Future<void> schedule(ScheduledNotification notification) async {
     await _ensureInitialized();
     AppTimezone.ensureInitialized();
+    if (!await notificationsAllowed()) {
+      _lastScheduleError = 'notifications-disabled';
+      return;
+    }
     final tz.TZDateTime when = tz.TZDateTime.from(
       notification.fireAt.toUtc(),
       tz.UTC,
@@ -132,23 +185,33 @@ class FlutterNotificationGateway implements NotificationGateway {
     if (!when.isAfter(tz.TZDateTime.now(tz.UTC))) {
       return;
     }
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      channelIdValue,
+      channelName,
+      channelDescription: 'أذان وإشعارات أوقات الصلاة',
+      icon: notificationIcon,
+      importance: Importance.max,
+      priority: Priority.max,
+      category: AndroidNotificationCategory.alarm,
+      visibility: NotificationVisibility.public,
+      sound: RawResourceAndroidNotificationSound('adhan_notify'),
+      playSound: true,
+      enableVibration: true,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+    );
     const NotificationDetails details = NotificationDetails(
-      android: AndroidNotificationDetails(
-        channelId,
-        channelName,
-        channelDescription: 'أذان وإشعارات أوقات الصلاة',
-        importance: Importance.max,
-        priority: Priority.max,
-        sound: RawResourceAndroidNotificationSound('adhan_notify'),
-        playSound: true,
-      ),
+      android: androidDetails,
       iOS: DarwinNotificationDetails(
         presentAlert: true,
         presentSound: true,
+        presentBadge: true,
         sound: 'adhan_notify.wav',
       ),
     );
     final String payload = notification.payload.encode();
+    final bool exact = await exactAlarmsAllowed();
+    _lastScheduleUsedInexact = !exact;
+    _lastScheduleError = null;
     try {
       await _plugin.zonedSchedule(
         notification.id,
@@ -156,19 +219,33 @@ class FlutterNotificationGateway implements NotificationGateway {
         notification.body,
         when,
         details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: exact
+            ? AndroidScheduleMode.exactAllowWhileIdle
+            : AndroidScheduleMode.inexactAllowWhileIdle,
         payload: payload,
       );
-    } catch (_) {
-      await _plugin.zonedSchedule(
-        notification.id,
-        notification.title,
-        notification.body,
-        when,
-        details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: payload,
-      );
+    } catch (error, stack) {
+      debugPrint('prayer notification exact schedule failed: $error');
+      debugPrint('$stack');
+      try {
+        await _plugin.zonedSchedule(
+          notification.id,
+          notification.title,
+          notification.body,
+          when,
+          details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          payload: payload,
+        );
+        _lastScheduleUsedInexact = true;
+        _lastScheduleError = error.toString();
+      } catch (fallbackError) {
+        _lastScheduleError = fallbackError.toString();
+        debugPrint(
+          'prayer notification inexact schedule failed: $fallbackError',
+        );
+        rethrow;
+      }
     }
   }
 
@@ -219,10 +296,21 @@ class FakeNotificationGateway implements NotificationGateway {
   bool throwOnSchedule;
   int permissionRequests = 0;
   int settingsOpens = 0;
+  bool lastScheduleUsedInexactValue = false;
+  String? lastScheduleErrorValue;
   final Map<int, ScheduledNotification> scheduled =
       <int, ScheduledNotification>{};
   NotificationTapCallback? onTap;
   NotificationPayload? launchPayload;
+
+  @override
+  String get channelId => FlutterNotificationGateway.channelIdValue;
+
+  @override
+  bool get lastScheduleUsedInexact => lastScheduleUsedInexactValue;
+
+  @override
+  String? get lastScheduleError => lastScheduleErrorValue;
 
   @override
   Future<void> initialize({NotificationTapCallback? onTap}) async {
@@ -230,7 +318,7 @@ class FakeNotificationGateway implements NotificationGateway {
   }
 
   @override
-  Future<bool> requestPermission() async {
+  Future<bool> requestPermission({bool requestExactAlarms = true}) async {
     permissionRequests += 1;
     return permissionGranted;
   }
@@ -249,11 +337,15 @@ class FakeNotificationGateway implements NotificationGateway {
   @override
   Future<void> schedule(ScheduledNotification notification) async {
     if (throwOnSchedule) {
+      lastScheduleErrorValue = 'schedule failed';
       throw Exception('schedule failed');
     }
     if (!permissionGranted) {
+      lastScheduleErrorValue = 'notifications-disabled';
       return;
     }
+    lastScheduleUsedInexactValue = !exactAllowed;
+    lastScheduleErrorValue = exactAllowed ? null : 'inexact-fallback';
     scheduled[notification.id] = notification;
   }
 

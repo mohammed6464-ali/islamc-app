@@ -141,8 +141,6 @@ class _MawaqeetnaAppState extends State<MawaqeetnaApp>
             title: AppLegal.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: widget.state.darkMode ? ThemeMode.dark : ThemeMode.light,
             locale: widget.state.locale,
             supportedLocales: AppLocalizations.supportedLocales,
             localizationsDelegates: AppLocalizations.localizationsDelegates,

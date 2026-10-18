@@ -78,18 +78,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get languageSubtitle => 'واجهة المستخدم والمواقيت';
 
   @override
-  String get darkMode => 'الوضع الداكن';
-
-  @override
-  String get darkModeOn => 'تم تفعيل الوضع الداكن.';
-
-  @override
-  String get darkModeOff => 'تم إيقاف الوضع الداكن.';
-
-  @override
-  String get darkModeSubtitle => 'خلفية داكنة مع الإبقاء على ألوان الهوية';
-
-  @override
   String get appearance => 'المظهر واللغة';
 
   @override
@@ -188,21 +176,95 @@ class AppLocalizationsAr extends AppLocalizations {
   String get terms => 'الشروط والأحكام';
 
   @override
-  String get rateApp => 'تقييم التطبيق';
-
-  @override
   String get shareApp => 'مشاركة التطبيق';
 
   @override
-  String get rateUnavailable => 'التقييم يتاح بعد النشر على المتجر.';
+  String get legalLastUpdated => 'آخر تحديث: أكتوبر 2026';
 
   @override
   String get privacyBody =>
-      'لم يُوفَّر رابط سياسة خصوصية رسمي بعد. يحسب التطبيق المواقيت محليًا، ويستخدم الموقع للقبلة والطقس عند السماح بذلك.';
+      'تطبيق «تقويم ومواقيت» رفيق شخصي لمواقيت الصلاة والقبلة والطقس والتقويمين الهجري والميلادي. لا نطلب إنشاء حساب، ولا نشغّل سحابة لبيانات المستخدمين.';
+
+  @override
+  String get privacyDeviceTitle => 'البيانات على جهازك';
+
+  @override
+  String get privacyDeviceBody =>
+      'تُحفظ اختياراتك — المدينة، اللغة، طريقة الحساب، جامع الأذان، وحدة الحرارة، عرض التقويم، وإعدادات التنبيه — محليًا على الجهاز حتى تبقى بعد إغلاق التطبيق. لا تُرفع هذه الإعدادات إلى خوادمنا.';
+
+  @override
+  String get privacyLocationTitle => 'الموقع';
+
+  @override
+  String get privacyLocationBody =>
+      'إذا سمحت بالوصول إلى الموقع، تُستخدم الإحداثيات على الجهاز لحساب مواقيت الصلاة واتجاه القبلة، ولطلب طقس منطقتك. يمكنك إيقاف تحديد الموقع واختيار المدينة يدويًا في أي وقت.';
+
+  @override
+  String get privacyWeatherTitle => 'الطقس';
+
+  @override
+  String get privacyWeatherBody =>
+      'يُطلب الطقس الحالي والتوقعات من خدمة Open-Meteo باستخدام الإحداثيات أو المدينة المختارة. يُحتفظ بنسخة مؤقتة قصيرة على الجهاز لتقليل الطلبات المتكررة.';
+
+  @override
+  String get privacyNotificationsTitle => 'التنبيهات والأذان';
+
+  @override
+  String get privacyNotificationsBody =>
+      'تُجدول تذكيرات الصلاة والمناسبات محليًا عبر نظام إشعارات الجهاز. تشغيل الأذان يتم على جهازك. لا نرسل رسائل تسويقية.';
+
+  @override
+  String get privacyShareTitle => 'المشاركة والاحتفاظ';
+
+  @override
+  String get privacyShareBody =>
+      'لا نبيع بياناتك. لا نطلب اسمك أو بريدك أو رقم هاتفك لاستخدام التطبيق. تبقى الإعدادات المحلية إلى أن تمسح بيانات التطبيق أو تزيله.';
 
   @override
   String get termsBody =>
-      'لم تُعتمد نصوص الشروط والأحكام بعد. يلزم توفير الرابط الرسمي قبل النشر.';
+      'باستخدامك تطبيق «تقويم ومواقيت» فإنك توافق على هذه الشروط. إن لم توافق فيُرجى التوقف عن استخدام التطبيق.';
+
+  @override
+  String get termsServiceTitle => 'ما يقدّمه التطبيق';
+
+  @override
+  String get termsServiceBody =>
+      'يعرض التطبيق مواقيت الصلاة، واتجاه القبلة، والطقس، والتقويم الهجري والميلادي، والمناسبات الإسلامية والوطنية. بعض الميزات تحتاج إلى الأذونات التي تمنحها، والطقس يحتاج إلى اتصال بالشبكة.';
+
+  @override
+  String get termsPrayerTitle => 'مواقيت الصلاة';
+
+  @override
+  String get termsPrayerBody =>
+      'تُحسب المواقيت على الجهاز، وافتراضيًا وفق طريقة أم القرى. يمكنك اختيار طريقة حساب أخرى. المواقيت المعروضة معينة لتنظيم اليوم، وليست فتوى ولا إعلان رؤية رسمي.';
+
+  @override
+  String get termsAccuracyTitle => 'الدقة';
+
+  @override
+  String get termsAccuracyBody =>
+      'قد يختلف اتجاه القبلة أو الطقس أو تواريخ التقويم بسبب مستشعرات الجهاز أو تأخر الشبكة أو إعلانات رسمية لاحقة. عند الحاجة أكّد أوقات العبادة والإجازات من مصادر رسمية.';
+
+  @override
+  String get termsUseTitle => 'مسؤولياتك';
+
+  @override
+  String get termsUseBody =>
+      'استخدم التطبيق وفق النظام. لا تعتمد عليه مصدرًا وحيدًا للأحكام الشرعية أو القانونية. أبقِ أذونات الموقع والتنبيهات تحت سيطرتك.';
+
+  @override
+  String get termsLiabilityTitle => 'حدود المسؤولية';
+
+  @override
+  String get termsLiabilityBody =>
+      'يُقدَّم التطبيق بحالته. لا نتحمل المسؤولية عن التأخير أو اختلاف الحساب أو فوات تنبيه أو قرارات بُنيت على المعلومات المعروضة.';
+
+  @override
+  String get termsChangesTitle => 'التعديلات';
+
+  @override
+  String get termsChangesBody =>
+      'قد تُحدَّث هذه الشروط وسياسة الخصوصية داخل التطبيق. استمرارك في الاستخدام بعد التحديث يعني قبولك للنسخة الأحدث.';
 
   @override
   String get aboutBody =>
@@ -442,6 +504,90 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get testNotificationMessage =>
       'هذا إشعار تجريبي. ضع التطبيق في الخلفية أو أقفل الجهاز.';
+
+  @override
+  String get notificationDiagnostics => 'تشخيص الإشعارات';
+
+  @override
+  String diagPermission(String value) {
+    return 'إذن الإشعارات: $value';
+  }
+
+  @override
+  String diagExactAlarms(String value) {
+    return 'التنبيهات الدقيقة: $value';
+  }
+
+  @override
+  String diagChannel(String id) {
+    return 'القناة: $id';
+  }
+
+  @override
+  String diagOffset(int minutes) {
+    return 'التذكير المسبق: $minutes د';
+  }
+
+  @override
+  String diagMosque(String name) {
+    return 'الجامع: $name';
+  }
+
+  @override
+  String diagDeviceTime(String time) {
+    return 'الوقت UTC: $time';
+  }
+
+  @override
+  String diagTimezone(String id) {
+    return 'المنطقة الزمنية: $id';
+  }
+
+  @override
+  String diagNextPrayer(String name, String time) {
+    return 'الصلاة التالية: $name عند $time';
+  }
+
+  @override
+  String diagNextScheduled(String time) {
+    return 'أقرب إشعار مجدول: $time';
+  }
+
+  @override
+  String diagPendingCount(int count) {
+    return 'الإشعارات المعلقة: $count';
+  }
+
+  @override
+  String diagPendingIds(String ids) {
+    return 'المعرّفات: $ids';
+  }
+
+  @override
+  String diagInexact(String value) {
+    return 'استخدام تنبيه غير دقيق: $value';
+  }
+
+  @override
+  String get diagOn => 'مفعّل';
+
+  @override
+  String get diagOff => 'غير مفعّل';
+
+  @override
+  String get scheduleTest60s => 'اختبار بعد 60 ثانية';
+
+  @override
+  String get scheduleTest2m => 'اختبار بعد دقيقتين';
+
+  @override
+  String get inspectPending => 'عرض الإشعارات المعلقة';
+
+  @override
+  String get cancelTestNotifications => 'إلغاء إشعارات الاختبار';
+
+  @override
+  String get testNotificationsCancelled => 'تم إلغاء إشعارات الاختبار.';
 
   @override
   String eventReminderTitle(String title) {
@@ -1340,12 +1486,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get contactUnavailable => 'لم يُوفَّر عنوان تواصل رسمي بعد.';
-
-  @override
-  String get lightMode => 'الوضع الفاتح';
-
-  @override
-  String get systemDefault => 'افتراضي النظام';
 
   @override
   String shareEventText(String title, String date, String tagline) {

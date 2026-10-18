@@ -15,6 +15,7 @@ import '../location/app_location.dart';
 import '../location/location_failure.dart';
 import '../location/location_provider.dart';
 import '../notifications/notification_gateway.dart';
+import '../notifications/notification_models.dart';
 import '../notifications/prayer_notification_scheduler.dart';
 import '../persistence/settings_store.dart';
 import '../prayer/daily_prayer_times.dart';
@@ -123,7 +124,6 @@ class AppState extends ChangeNotifier {
     final Map<String, Object?> data = await _store.load();
     _onboardingComplete = data['onboardingComplete'] == true;
     _useFahrenheit = data['useFahrenheit'] == true;
-    _darkMode = data['darkMode'] == true;
     _language = AppLanguage.normalize(data['language'] as String?);
     _masterPrayerAlerts = data['masterPrayerAlerts'] as bool? ?? true;
     _preAlertMinutes = data['preAlertMinutes'] as int? ?? 0;
@@ -155,8 +155,15 @@ class AppState extends ChangeNotifier {
     _hydrated = true;
     _recompute(persist: false);
     unawaited(_loadWeather());
-    unawaited(resyncNotifications());
+    unawaited(_bootstrapNotifications());
     _startTicker();
+  }
+
+  Future<void> _bootstrapNotifications() async {
+    if (_masterPrayerAlerts || _eventAlerts) {
+      await requestNotificationPermission(requestExactAlarms: false);
+    }
+    await resyncNotifications();
   }
 
   Future<void> completeOnboarding() async {
@@ -332,21 +339,12 @@ class AppState extends ChangeNotifier {
   String formatTemperature(int celsius) => '${convertTemperature(celsius)}°';
 
   // ----------------------------------------------------- appearance / lang
-  bool _darkMode = false;
   String _language = AppLanguage.arabic;
 
-  bool get darkMode => _darkMode;
   String get language => _language;
   String get languageCode => _language;
   Locale get locale => AppLanguage.localeOf(_language);
   bool get isEnglish => AppLanguage.isEnglish(_language);
-
-  void setDarkMode(bool value) {
-    if (_darkMode == value) return;
-    _darkMode = value;
-    _persist();
-    notifyListeners();
-  }
 
   void setLanguage(String value) {
     final String next = AppLanguage.normalize(value);
@@ -401,7 +399,16 @@ class AppState extends ChangeNotifier {
     _masterPrayerAlerts = value;
     _persist();
     notifyListeners();
-    unawaited(resyncNotifications());
+    if (value) {
+      unawaited(_enableAlertsAndResync());
+    } else {
+      unawaited(resyncNotifications());
+    }
+  }
+
+  Future<void> _enableAlertsAndResync() async {
+    await requestNotificationPermission();
+    await resyncNotifications();
   }
 
   void setPrayerAlert(String prayerId, bool value) {
@@ -877,12 +884,16 @@ class AppState extends ChangeNotifier {
     unawaited(resyncNotifications());
   }
 
-  Future<bool> requestNotificationPermission() async {
+  Future<bool> requestNotificationPermission({
+    bool requestExactAlarms = true,
+  }) async {
     final NotificationGateway? gateway = _notificationGateway;
     if (gateway == null) {
       return true;
     }
-    final bool allowed = await gateway.requestPermission();
+    final bool allowed = await gateway.requestPermission(
+      requestExactAlarms: requestExactAlarms,
+    );
     if (!allowed) {
       notificationPermissionMessage = AppCopy.forCode(
         _language,
@@ -936,7 +947,10 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<DateTime?> scheduleTestNotification() async {
+  Future<DateTime?> scheduleTestNotification({
+    Duration delay = const Duration(minutes: 2),
+    int id = NotificationIds.test,
+  }) async {
     final PrayerNotificationScheduler? scheduler = _scheduler;
     if (scheduler == null) {
       notificationPermissionMessage = AppCopy.forCode(
@@ -960,6 +974,8 @@ class AppState extends ChangeNotifier {
     try {
       final DateTime fireAt = await scheduler.scheduleTestNotification(
         nowUtc: clock.nowUtc(),
+        delay: delay,
+        id: id,
         languageCode: _language,
       );
       lastTestNotificationAt = fireAt;
@@ -970,6 +986,73 @@ class AppState extends ChangeNotifier {
       notifyListeners();
       return null;
     }
+  }
+
+  Future<void> cancelTestNotifications() async {
+    await _scheduler?.cancelTestNotifications();
+    lastTestNotificationAt = null;
+    notifyListeners();
+  }
+
+  Future<NotificationDiagnostics> notificationDiagnostics() async {
+    final NotificationGateway? gateway = _notificationGateway;
+    final List<int> pending = await gateway?.pendingIds() ?? const <int>[];
+    DateTime? nextScheduled;
+    if (_masterPrayerAlerts) {
+      final AppCopy copy = AppCopy.forCode(_language);
+      final List<ScheduledNotification> planned =
+          _scheduler?.previewPrayers(
+            nowUtc: clock.nowUtc(),
+            today: _civilToday,
+            latitude: _location.latitude,
+            longitude: _location.longitude,
+            timezoneId: _location.timezoneId,
+            method: _calculationMethod,
+            prefs: PrayerSchedulePrefs(
+              masterEnabled: _masterPrayerAlerts,
+              enabledPrayerIds: <String>{
+                for (final MapEntry<String, bool> entry in _prayerAlerts.entries)
+                  if (entry.value) entry.key,
+              },
+              preAlertMinutes: _preAlertMinutes,
+              eventAlerts: _eventAlerts,
+              eventReminderIds: <String>{
+                for (final MapEntry<String, bool> entry
+                    in _eventPreAlerts.entries)
+                  if (entry.value) entry.key,
+              },
+              cityName: copy.cityNameFromId(
+                _location.catalogId,
+                _location.cityName,
+              ),
+              languageCode: _language,
+            ),
+          ) ??
+          const <ScheduledNotification>[];
+      if (planned.isNotEmpty) {
+        planned.sort(
+          (ScheduledNotification a, ScheduledNotification b) =>
+              a.fireAt.compareTo(b.fireAt),
+        );
+        nextScheduled = planned.first.fireAt;
+      }
+    }
+    return NotificationDiagnostics(
+      notificationsAllowed: await gateway?.notificationsAllowed() ?? true,
+      exactAlarmsAllowed: await gateway?.exactAlarmsAllowed() ?? true,
+      usedInexactFallback: gateway?.lastScheduleUsedInexact ?? false,
+      channelId: gateway?.channelId ?? FlutterNotificationGateway.channelIdValue,
+      preAlertMinutes: _preAlertMinutes,
+      mosqueId: _adhanMosque.name,
+      deviceTimeIso: clock.nowUtc().toIso8601String(),
+      timezoneId: _location.timezoneId,
+      nextPrayerId: _next.id,
+      nextPrayerAtIso: _next.occursAt.toUtc().toIso8601String(),
+      nextScheduledAtIso: nextScheduled?.toUtc().toIso8601String(),
+      pendingCount: pending.length,
+      pendingIds: pending,
+      scheduleError: gateway?.lastScheduleError,
+    );
   }
 
   Future<void> _syncEventReminder(String id, bool enabled) async {
@@ -1062,7 +1145,6 @@ class AppState extends ChangeNotifier {
       'onboardingComplete': _onboardingComplete,
       'calculationMethod': _calculationMethod.name,
       'useFahrenheit': _useFahrenheit,
-      'darkMode': _darkMode,
       'language': _language,
       'masterPrayerAlerts': _masterPrayerAlerts,
       'preAlertMinutes': _preAlertMinutes,

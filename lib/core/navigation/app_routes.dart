@@ -6,6 +6,7 @@ import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/onboarding/presentation/location_permission_screen.dart';
 import '../../features/prayer_times/presentation/prayer_times_screen.dart';
 import '../../features/qibla/presentation/qibla_screen.dart';
+import '../../features/settings/presentation/legal_document_screen.dart';
 import '../../features/settings/presentation/prayer_notifications_screen.dart';
 import '../../features/splash/presentation/splash_screen.dart';
 import 'main_shell.dart';
@@ -28,6 +29,8 @@ class AppRoutes {
   static const String notifications = '/notifications';
   static const String prayerNotifications = '/prayer-notifications';
   static const String eventDetails = '/event-details';
+  static const String privacyPolicy = '/privacy-policy';
+  static const String terms = '/terms';
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     return switch (settings.name) {
@@ -46,6 +49,8 @@ class AppRoutes {
         settings,
         EventDetailsScreen(eventId: settings.arguments! as String),
       ),
+      privacyPolicy => _build(settings, const PrivacyPolicyScreen()),
+      terms => _build(settings, const TermsScreen()),
       _ => null,
     };
   }

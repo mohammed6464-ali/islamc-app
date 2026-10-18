@@ -26,11 +26,7 @@ class CustomBottomNavigation extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
-          top: BorderSide(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.darkBorder
-                : AppColors.divider,
-          ),
+          top: const BorderSide(color: AppColors.divider),
         ),
       ),
       child: SafeArea(

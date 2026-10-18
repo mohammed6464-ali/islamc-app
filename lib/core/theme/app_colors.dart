@@ -83,11 +83,4 @@ class AppColors {
 
   static const Color sunOrange = Color(0xFFF2A93B);
   static const Color mintTint = Color(0xFFF3F9F6);
-
-  // Dark-mode surfaces (not a second brand palette).
-  static const Color darkBackground = Color(0xFF101614);
-  static const Color darkSurface = Color(0xFF1A2420);
-  static const Color darkBorder = Color(0xFF2C3A34);
-  static const Color darkTextPrimary = Color(0xFFF3F7F5);
-  static const Color darkTextSecondary = Color(0xFFB5C4BE);
 }

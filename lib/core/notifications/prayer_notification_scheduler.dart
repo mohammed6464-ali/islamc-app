@@ -133,12 +133,14 @@ class PrayerNotificationScheduler {
     required PrayerSchedulePrefs prefs,
     required PrayerCalcMethod method,
   }) async {
-    final List<int> pending = await _gateway.pendingIds();
-    for (final int id in pending) {
-      if (NotificationIds.isPrayer(id)) {
-        await _gateway.cancel(id);
-      }
+    if (!prefs.masterEnabled) {
+      await _cancelPrayerIds();
+      return;
     }
+    if (!await _gateway.notificationsAllowed()) {
+      return;
+    }
+    await _cancelPrayerIds();
     final List<DailyPrayerTimes> days = <DailyPrayerTimes>[
       for (int i = 0; i < PrayerNotificationPlanner.horizonDays; i++)
         _prayerTimes.calculate(
@@ -159,17 +161,49 @@ class PrayerNotificationScheduler {
     }
   }
 
+  Future<void> _cancelPrayerIds() async {
+    final List<int> pending = await _gateway.pendingIds();
+    for (final int id in pending) {
+      if (NotificationIds.isPrayer(id)) {
+        await _gateway.cancel(id);
+      }
+    }
+  }
+
+  List<ScheduledNotification> previewPrayers({
+    required DateTime nowUtc,
+    required DateTime today,
+    required double latitude,
+    required double longitude,
+    required String timezoneId,
+    required PrayerSchedulePrefs prefs,
+    required PrayerCalcMethod method,
+  }) {
+    final List<DailyPrayerTimes> days = <DailyPrayerTimes>[
+      for (int i = 0; i < PrayerNotificationPlanner.horizonDays; i++)
+        _prayerTimes.calculate(
+          date: today.add(Duration(days: i)),
+          latitude: latitude,
+          longitude: longitude,
+          timezoneId: timezoneId,
+          method: method,
+        ),
+    ];
+    return _planner.planPrayers(nowUtc: nowUtc, days: days, prefs: prefs);
+  }
+
   Future<DateTime> scheduleTestNotification({
     required DateTime nowUtc,
     Duration delay = const Duration(minutes: 2),
+    int id = NotificationIds.test,
     String languageCode = AppLanguage.arabic,
   }) async {
-    await _gateway.cancel(NotificationIds.test);
+    await _gateway.cancel(id);
     final DateTime fireAt = nowUtc.add(delay);
     final AppCopy copy = AppCopy.forCode(languageCode);
     await _gateway.schedule(
       ScheduledNotification(
-        id: NotificationIds.test,
+        id: id,
         fireAt: fireAt,
         title: copy.l10n.testNotificationTitle,
         body: copy.l10n.testNotificationMessage,
@@ -177,6 +211,15 @@ class PrayerNotificationScheduler {
       ),
     );
     return fireAt;
+  }
+
+  Future<void> cancelTestNotifications() async {
+    final List<int> pending = await _gateway.pendingIds();
+    for (final int id in pending) {
+      if (NotificationIds.isTest(id)) {
+        await _gateway.cancel(id);
+      }
+    }
   }
 
   Future<void> scheduleEventReminder({

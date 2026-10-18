@@ -81,18 +81,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageSubtitle => 'App interface and prayer labels';
 
   @override
-  String get darkMode => 'Dark mode';
-
-  @override
-  String get darkModeOn => 'Dark mode is on.';
-
-  @override
-  String get darkModeOff => 'Dark mode is off.';
-
-  @override
-  String get darkModeSubtitle => 'Dark background with brand colors';
-
-  @override
   String get appearance => 'Appearance & language';
 
   @override
@@ -190,21 +178,95 @@ class AppLocalizationsEn extends AppLocalizations {
   String get terms => 'Terms and conditions';
 
   @override
-  String get rateApp => 'Rate the app';
-
-  @override
   String get shareApp => 'Share the app';
 
   @override
-  String get rateUnavailable => 'Rating is available after store publication.';
+  String get legalLastUpdated => 'Last updated: October 2026';
 
   @override
   String get privacyBody =>
-      'No official privacy-policy URL has been provided yet. Prayer times are calculated on device. Location is used for Qibla and weather when allowed.';
+      'تقويم ومواقيت is a personal companion for prayer times, Qibla, weather, and the Hijri and Gregorian calendars. We do not create accounts, and we do not run a user-data cloud for this app.';
+
+  @override
+  String get privacyDeviceTitle => 'Data on your device';
+
+  @override
+  String get privacyDeviceBody =>
+      'Your choices — city, language, calculation method, Adhan mosque, temperature unit, calendar view, and alert preferences — are saved locally on the device so they remain after you close the app. These settings are not uploaded to our servers.';
+
+  @override
+  String get privacyLocationTitle => 'Location';
+
+  @override
+  String get privacyLocationBody =>
+      'If you allow location access, coordinates are used on the device to calculate prayer times and Qibla, and to request weather for your area. You can turn GPS off and pick a city manually at any time.';
+
+  @override
+  String get privacyWeatherTitle => 'Weather';
+
+  @override
+  String get privacyWeatherBody =>
+      'Current conditions and the forecast are requested from the Open-Meteo weather service using coordinates or the selected city. A short cache is kept on the device to limit repeat requests.';
+
+  @override
+  String get privacyNotificationsTitle => 'Notifications and Adhan';
+
+  @override
+  String get privacyNotificationsBody =>
+      'Prayer and occasion reminders are scheduled locally through the device notification system. Adhan audio plays on your device. We do not send marketing messages.';
+
+  @override
+  String get privacyShareTitle => 'Sharing and retention';
+
+  @override
+  String get privacyShareBody =>
+      'We do not sell your data. We do not require your name, email, or phone number to use the app. Local settings remain until you clear the app data or uninstall it.';
 
   @override
   String get termsBody =>
-      'Terms and conditions have not been published yet. An official URL is required before release.';
+      'By using تقويم ومواقيت you agree to these terms. If you do not agree, please stop using the app.';
+
+  @override
+  String get termsServiceTitle => 'What the app provides';
+
+  @override
+  String get termsServiceBody =>
+      'The app displays prayer times, Qibla, weather, a Hijri and Gregorian calendar, and Islamic and national occasions. Some features need the permissions you grant, and weather needs a network connection.';
+
+  @override
+  String get termsPrayerTitle => 'Prayer times';
+
+  @override
+  String get termsPrayerBody =>
+      'Times are calculated on the device, by default according to the Umm Al-Qura method. You may choose another calculation method. Displayed times help you organize the day; they are not a fatwa or an official moon-sighting announcement.';
+
+  @override
+  String get termsAccuracyTitle => 'Accuracy';
+
+  @override
+  String get termsAccuracyBody =>
+      'Qibla, weather, and calendar dates may differ because of device sensors, network delays, or later official announcements. Confirm important worship times and holidays from official sources when needed.';
+
+  @override
+  String get termsUseTitle => 'Your responsibilities';
+
+  @override
+  String get termsUseBody =>
+      'Use the app lawfully. Do not rely on it as the sole source for legal or religious rulings. Keep location and notification permissions under your control.';
+
+  @override
+  String get termsLiabilityTitle => 'Limitation of liability';
+
+  @override
+  String get termsLiabilityBody =>
+      'The app is provided as is. We are not liable for delays, calculation differences, missed reminders, or decisions based on the information shown.';
+
+  @override
+  String get termsChangesTitle => 'Changes';
+
+  @override
+  String get termsChangesBody =>
+      'These terms and the privacy policy may be updated inside the app. Continued use after an update means you accept the latest version.';
 
   @override
   String get aboutBody =>
@@ -445,6 +507,90 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get testNotificationMessage =>
       'This is a test. Background the app or lock the device.';
+
+  @override
+  String get notificationDiagnostics => 'Notification diagnostics';
+
+  @override
+  String diagPermission(String value) {
+    return 'Notification permission: $value';
+  }
+
+  @override
+  String diagExactAlarms(String value) {
+    return 'Exact alarms: $value';
+  }
+
+  @override
+  String diagChannel(String id) {
+    return 'Channel: $id';
+  }
+
+  @override
+  String diagOffset(int minutes) {
+    return 'Reminder offset: $minutes min';
+  }
+
+  @override
+  String diagMosque(String name) {
+    return 'Mosque: $name';
+  }
+
+  @override
+  String diagDeviceTime(String time) {
+    return 'UTC now: $time';
+  }
+
+  @override
+  String diagTimezone(String id) {
+    return 'Timezone: $id';
+  }
+
+  @override
+  String diagNextPrayer(String name, String time) {
+    return 'Next prayer: $name at $time';
+  }
+
+  @override
+  String diagNextScheduled(String time) {
+    return 'Next scheduled alert: $time';
+  }
+
+  @override
+  String diagPendingCount(int count) {
+    return 'Pending notifications: $count';
+  }
+
+  @override
+  String diagPendingIds(String ids) {
+    return 'Pending IDs: $ids';
+  }
+
+  @override
+  String diagInexact(String value) {
+    return 'Using inexact alarms: $value';
+  }
+
+  @override
+  String get diagOn => 'on';
+
+  @override
+  String get diagOff => 'off';
+
+  @override
+  String get scheduleTest60s => 'Test in 60 seconds';
+
+  @override
+  String get scheduleTest2m => 'Test in 2 minutes';
+
+  @override
+  String get inspectPending => 'Inspect pending notifications';
+
+  @override
+  String get cancelTestNotifications => 'Cancel test notifications';
+
+  @override
+  String get testNotificationsCancelled => 'Test notifications cancelled.';
 
   @override
   String eventReminderTitle(String title) {
@@ -1348,12 +1494,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get contactUnavailable =>
       'No official contact address has been provided yet.';
-
-  @override
-  String get lightMode => 'Light mode';
-
-  @override
-  String get systemDefault => 'System default';
 
   @override
   String shareEventText(String title, String date, String tagline) {
