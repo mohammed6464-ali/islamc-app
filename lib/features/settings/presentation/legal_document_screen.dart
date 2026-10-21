@@ -38,6 +38,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           body: l10n.privacyNotificationsBody,
         ),
         LegalSection(title: l10n.privacyShareTitle, body: l10n.privacyShareBody),
+        LegalSection(title: l10n.privacyAdsTitle, body: l10n.privacyAdsBody),
       ],
     );
   }

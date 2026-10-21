@@ -5,6 +5,7 @@ import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/weather/presentation/weather_screen.dart';
+import '../ads/banner_ad_slot.dart';
 import '../theme/app_theme.dart';
 import '../widgets/custom_bottom_navigation.dart';
 import 'app_routes.dart';
@@ -52,9 +53,15 @@ class MainShellState extends State<MainShell> {
             SettingsScreen(),
           ],
         ),
-        bottomNavigationBar: CustomBottomNavigation(
-          currentIndex: _index,
-          onTap: selectTab,
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            const BannerAdSlot(),
+            CustomBottomNavigation(
+              currentIndex: _index,
+              onTap: selectTab,
+            ),
+          ],
         ),
       ),
     );

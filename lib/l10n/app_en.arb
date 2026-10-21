@@ -68,6 +68,8 @@
   "privacyNotificationsBody": "Prayer and occasion reminders are scheduled locally through the device notification system. Adhan audio plays on your device. We do not send marketing messages.",
   "privacyShareTitle": "Sharing and retention",
   "privacyShareBody": "We do not sell your data. We do not require your name, email, or phone number to use the app. Local settings remain until you clear the app data or uninstall it.",
+  "privacyAdsTitle": "Advertising",
+  "privacyAdsBody": "The app displays ads through Google AdMob. This service may collect the device''s advertising ID and basic device data to serve and measure ads. We do not access this data ourselves or use it for any other purpose.",
   "termsBody": "By using تقويم ومواقيت you agree to these terms. If you do not agree, please stop using the app.",
   "termsServiceTitle": "What the app provides",
   "termsServiceBody": "The app displays prayer times, Qibla, weather, a Hijri and Gregorian calendar, and Islamic and national occasions. Some features need the permissions you grant, and weather needs a network connection.",

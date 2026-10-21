@@ -223,6 +223,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'We do not sell your data. We do not require your name, email, or phone number to use the app. Local settings remain until you clear the app data or uninstall it.';
 
   @override
+  String get privacyAdsTitle => 'Advertising';
+
+  @override
+  String get privacyAdsBody =>
+      'The app displays ads through Google AdMob. This service may collect the device\'s advertising ID and basic device data to serve and measure ads. We do not access this data ourselves or use it for any other purpose.';
+
+  @override
   String get termsBody =>
       'By using تقويم ومواقيت you agree to these terms. If you do not agree, please stop using the app.';
 

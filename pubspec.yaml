@@ -51,6 +51,7 @@ dependencies:
   add_2_calendar: 3.0.1
   permission_handler: ^12.0.1
   package_info_plus: ^9.0.0
+  google_mobile_ads: ^6.0.0
 
 dev_dependencies:
   flutter_test:

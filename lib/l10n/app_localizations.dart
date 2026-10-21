@@ -500,6 +500,18 @@ abstract class AppLocalizations {
   /// **'We do not sell your data. We do not require your name, email, or phone number to use the app. Local settings remain until you clear the app data or uninstall it.'**
   String get privacyShareBody;
 
+  /// No description provided for @privacyAdsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Advertising'**
+  String get privacyAdsTitle;
+
+  /// No description provided for @privacyAdsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The app displays ads through Google AdMob. This service may collect the device\'\'s advertising ID and basic device data to serve and measure ads. We do not access this data ourselves or use it for any other purpose.'**
+  String get privacyAdsBody;
+
   /// No description provided for @termsBody.
   ///
   /// In en, this message translates to:

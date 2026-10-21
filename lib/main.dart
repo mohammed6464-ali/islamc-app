@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/ads/ads_service.dart';
 import 'core/location/geolocator_location_provider.dart';
 import 'core/navigation/app_routes.dart';
 import 'core/notifications/notification_gateway.dart';
@@ -22,6 +25,7 @@ import 'l10n/app_localizations.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  unawaited(AdsService.initialize());
   AppTimezone.ensureInitialized();
   await AppInfo.load();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
