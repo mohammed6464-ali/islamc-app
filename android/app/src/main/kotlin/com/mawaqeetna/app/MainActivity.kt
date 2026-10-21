@@ -1,4 +1,4 @@
-package com.example.islmac_app
+package com.mawaqeetna.app
 
 import io.flutter.embedding.android.FlutterActivity
 
