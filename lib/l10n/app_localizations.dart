@@ -2756,18 +2756,6 @@ abstract class AppLocalizations {
   /// **'Today ({weekday})'**
   String forecastTodayWeekday(String weekday);
 
-  /// No description provided for @contactUs.
-  ///
-  /// In en, this message translates to:
-  /// **'Contact us'**
-  String get contactUs;
-
-  /// No description provided for @contactUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'No official contact address has been provided yet.'**
-  String get contactUnavailable;
-
   /// No description provided for @shareEventText.
   ///
   /// In en, this message translates to:

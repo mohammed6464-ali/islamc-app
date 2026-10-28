@@ -155,34 +155,34 @@ class HomeGreeting extends StatelessWidget {
             const Positioned.fill(child: DotGridPattern()),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.14),
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.14),
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.person_outline_rounded,
+                          size: 21,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.person_outline_rounded,
-                      size: 21,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
                           context.l10n.welcome,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w400,
@@ -190,23 +190,27 @@ class HomeGreeting extends StatelessWidget {
                             height: 1.3,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          context.l10n.homeTagline,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            height: 1.35,
-                          ),
-                        ),
-                      ],
+                      ),
+                      const SizedBox(width: 10),
+                      const Flexible(child: _TimezonePill()),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      context.l10n.homeTagline,
+                      maxLines: 1,
+                      softWrap: false,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.35,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  const Flexible(child: _TimezonePill()),
                 ],
               ),
             ),

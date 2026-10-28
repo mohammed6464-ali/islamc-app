@@ -268,14 +268,6 @@ class SettingsScreen extends StatelessWidget {
                         Navigator.of(context).pushNamed(AppRoutes.terms),
                   ),
                   SettingsTile(
-                    icon: Icons.mail_outline_rounded,
-                    title: l10n.contactUs,
-                    onTap: () => showAppMessage(
-                      context,
-                      l10n.contactUnavailable,
-                    ),
-                  ),
-                  SettingsTile(
                     icon: Icons.share_outlined,
                     title: l10n.shareApp,
                     onTap: () {

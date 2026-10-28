@@ -493,8 +493,6 @@
   "@weekdayCommaDate": {"placeholders": {"weekday": {"type": "String"}, "date": {"type": "String"}}},
   "forecastTodayWeekday": "Today ({weekday})",
   "@forecastTodayWeekday": {"placeholders": {"weekday": {"type": "String"}}},
-  "contactUs": "Contact us",
-  "contactUnavailable": "No official contact address has been provided yet.",
   "shareEventText": "{title}\n{date}\n{tagline}",
   "@shareEventText": {"placeholders": {"title": {"type": "String"}, "date": {"type": "String"}, "tagline": {"type": "String"}}},
   "nationalOfficial": "Official national occasion",

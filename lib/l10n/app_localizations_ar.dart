@@ -1482,12 +1482,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get contactUs => 'تواصل معنا';
-
-  @override
-  String get contactUnavailable => 'لم يُوفَّر عنوان تواصل رسمي بعد.';
-
-  @override
   String shareEventText(String title, String date, String tagline) {
     return '$title\n$date\n$tagline';
   }
