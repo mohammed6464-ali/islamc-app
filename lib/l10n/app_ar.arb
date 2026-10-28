@@ -495,8 +495,6 @@
   "@weekdayCommaDate": {"placeholders": {"weekday": {"type": "String"}, "date": {"type": "String"}}},
   "forecastTodayWeekday": "اليوم ({weekday})",
   "@forecastTodayWeekday": {"placeholders": {"weekday": {"type": "String"}}},
-  "contactUs": "تواصل معنا",
-  "contactUnavailable": "لم يُوفَّر عنوان تواصل رسمي بعد.",
   "shareEventText": "{title}\n{date}\n{tagline}",
   "@shareEventText": {"placeholders": {"title": {"type": "String"}, "date": {"type": "String"}, "tagline": {"type": "String"}}},
   "nationalOfficial": "مناسبة وطنية رسمية",

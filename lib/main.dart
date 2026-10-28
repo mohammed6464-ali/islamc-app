@@ -60,10 +60,12 @@ void _handleNotificationTap(AppState state, NotificationPayload payload) {
           ? copy.l10n.inboxEventTitle
           : copy.l10n.inboxPrayerTitle,
       bodyTemplate: payload.kind == AppNotificationKind.prayer
-          ? copy.l10n.inboxPrayerBody(copy.cityNameFromId(
-              state.location.catalogId,
-              state.location.cityName,
-            ))
+          ? copy.l10n.inboxPrayerBody(
+              copy.cityNameFromId(
+                state.location.catalogId,
+                state.location.cityName,
+              ),
+            )
           : copy.l10n.inboxEventBody,
       timeLabel: copy.l10n.now,
       icon: payload.kind == AppNotificationKind.event

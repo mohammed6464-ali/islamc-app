@@ -1496,13 +1496,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get contactUs => 'Contact us';
-
-  @override
-  String get contactUnavailable =>
-      'No official contact address has been provided yet.';
-
-  @override
   String shareEventText(String title, String date, String tagline) {
     return '$title\n$date\n$tagline';
   }
